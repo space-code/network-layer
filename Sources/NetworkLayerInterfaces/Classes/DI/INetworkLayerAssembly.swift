@@ -3,4 +3,6 @@
 // Copyright © 2023 Space Code. All rights reserved.
 //
 
-final class NetworkLayer {}
+import Foundation
+
+public protocol INetworkLayerAssembly {}

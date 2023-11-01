@@ -14,13 +14,22 @@ let package = Package(
     products: [
         .library(name: "NetworkLayer", targets: ["NetworkLayer"]),
         .library(name: "NetworkLayerInterfaces", targets: ["NetworkLayerInterfaces"]),
-        .library(name: "NetworkLayerMock", targets: ["NetworkLayerMock"]),
     ],
     dependencies: [],
     targets: [
-        .target(name: "NetworkLayer", dependencies: ["NetworkLayerInterfaces"]),
-        .target(name: "NetworkLayerInterfaces", dependencies: []),
-        .target(name: "NetworkLayerMock", dependencies: ["NetworkLayerInterfaces"]),
-        .testTarget(name: "NetworkLayerTests", dependencies: ["NetworkLayer"]),
+        .target(
+            name: "NetworkLayer",
+            dependencies: ["NetworkLayerInterfaces"]
+        ),
+        .target(
+            name: "NetworkLayerInterfaces",
+            dependencies: []
+        ),
+        .testTarget(
+            name: "NetworkLayerTests",
+            dependencies: [
+                "NetworkLayer",
+            ]
+        ),
     ]
 )
