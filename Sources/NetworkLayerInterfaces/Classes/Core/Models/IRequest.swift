@@ -5,22 +5,29 @@
 
 import Foundation
 
+/// A type to which all requests must conform.
 public protocol IRequest {
-    /// Base url to the resource.
+    /// The base `URL` for the resource.
     var domainName: String { get }
 
-    /// Endpoint path.
+    /// The endpoint path.
     var path: String { get }
 
-    /// A dictonary that contains the parameters that will be encoded into request's header.
+    /// A dictionary that contains the parameters to be encoded into the request's header.
     var headers: [String: String]? { get }
 
-    /// A dictionary that contains the parameters that will be encoded into request.
+    /// A dictionary that contains the parameters to be encoded into the request.
     var parameters: [String: String]? { get }
 
-    /// A Boolean value indicating whether the requires authentication.
-    var requiresAuthentification: Bool { get }
+    /// A Boolean value indicating whether authentication is required.
+    var requiresAuthentication: Bool { get }
 
-    /// Request's timeout.
+    /// Request's timeout interval.
     var timeoutInterval: TimeInterval { get }
+
+    /// The HTTP method.
+    var httpMethod: HTTPMethod { get }
+
+    /// A dictonary that contains the request's body.
+    var httpBody: [String: Any]? { get }
 }

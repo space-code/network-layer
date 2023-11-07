@@ -43,7 +43,7 @@ actor RequestProcessor {
         _ request: T,
         delegate: URLSessionDelegate?,
         configure _: ((inout URLRequest) throws -> Void)?
-    ) async throws -> Data {
+    ) async throws -> Response<Data> {
         guard let request = requestBuilder.build(request) else {
             throw URLError(URLError.badURL)
         }
@@ -78,7 +78,7 @@ extension RequestProcessor: IRequestProcessor {
         configure: ((inout URLRequest) throws -> Void)? = nil
     ) async throws -> M {
         let response = try await performRequest(request, delegate: delegate, configure: configure)
-        let item = try configuration.jsonDecoder.decode(M.self, from: response)
+        let item = try configuration.jsonDecoder.decode(M.self, from: response.data)
         return item
     }
 }

@@ -4,13 +4,16 @@
 //
 
 import Foundation
+import NetworkLayerInterfaces
 
 // MARK: - DataRequestHandler
 
-final class DataRequestHandler: NSObject, IDataRequestHandler {
+final class DataRequestHandler: NSObject {
     // MARK: Properties
 
-    private var handlers: [URLSessionTask: DataTaskHandler] = [:]
+    private typealias HandlerDictonary = [URLSessionTask: DataTaskHandler]
+
+    private var handlers: HandlerDictonary = [:]
     private var userDataDelegate: URLSessionDataDelegate?
 
     var urlSessionDelegate: URLSessionDelegate? {
@@ -18,18 +21,19 @@ final class DataRequestHandler: NSObject, IDataRequestHandler {
             userDataDelegate = urlSessionDelegate as? URLSessionDataDelegate
         }
     }
+}
 
-    private class DataTaskHandler {
-        typealias Completion = (Result<Data, Error>) -> Void
+// MARK: IDataRequestHandler
 
-        var data: Data?
-        var completion: Completion?
-    }
-
-    func startDataTask(_ task: URLSessionDataTask, session _: URLSession, delegate _: URLSessionDelegate?) async throws -> Data {
+extension DataRequestHandler: IDataRequestHandler {
+    func startDataTask(
+        _ task: URLSessionDataTask,
+        session _: URLSession,
+        delegate: URLSessionDelegate?
+    ) async throws -> Response<Data> {
         try await withTaskCancellationHandler(operation: {
             try await withUnsafeThrowingContinuation { continuation in
-                let dataTaskHandler = DataTaskHandler()
+                let dataTaskHandler = DataTaskHandler(delegate: delegate)
                 dataTaskHandler.completion = continuation.resume(with:)
                 handlers[task] = dataTaskHandler
                 task.resume()
@@ -56,8 +60,43 @@ extension DataRequestHandler {
 // MARK: URLSessionTaskDelegate
 
 extension DataRequestHandler {
-    func urlSession(_: URLSession, task: URLSessionTask, didCompleteWithError _: Error?) {
+    func urlSession(_: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard let handler = handlers[task] else { return }
         handlers[task] = nil
+
+        if let error = error {
+            handler.completion?(.failure(error))
+        } else {
+            if let response = task.response {
+                let data = handler.data ?? Data()
+                let response = Response(data: data, response: response)
+                handler.completion?(.success(response))
+            } else {
+                handler.completion?(.failure(URLError(.unknown)))
+            }
+        }
+    }
+}
+
+// MARK: DataRequestHandler.DataTaskHandler
+
+private extension DataRequestHandler {
+    private class DataTaskHandler {
+        // MARK: Types
+
+        typealias Completion = (Result<Response<Data>, Error>) -> Void
+
+        // MARK: Properties
+
+        let delegate: URLSessionDelegate?
+
+        var data: Data?
+        var completion: Completion?
+
+        // MARK: Initialization
+
+        init(delegate: URLSessionDelegate?) {
+            self.delegate = delegate
+        }
     }
 }
