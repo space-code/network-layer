@@ -3,6 +3,7 @@
 // Copyright © 2023 Space Code. All rights reserved.
 //
 
+import Atomic
 import Foundation
 import NetworkLayerInterfaces
 
@@ -13,7 +14,7 @@ final class DataRequestHandler: NSObject {
 
     private typealias HandlerDictonary = [URLSessionTask: DataTaskHandler]
 
-    private var handlers: HandlerDictonary = [:]
+    @Atomic private var handlers: HandlerDictonary = [:]
     private var userDataDelegate: URLSessionDataDelegate?
 
     var urlSessionDelegate: URLSessionDelegate? {
