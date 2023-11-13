@@ -9,14 +9,20 @@ import NetworkLayerInterfaces
 
 // MARK: - DataRequestHandler
 
+/// Manages data request handlers for URLSessionTasks.
 final class DataRequestHandler: NSObject {
     // MARK: Properties
 
     private typealias HandlerDictonary = [URLSessionTask: DataTaskHandler]
 
+    /// The dictonary that stores handlers.
     @Atomic private var handlers: HandlerDictonary = [:]
+    /// A protocol that defines methods that URL session instances call on their
+    /// delegates to handle task-level events specific to data and upload tasks.
     private var userDataDelegate: URLSessionDataDelegate?
 
+    /// A protocol that defines methods that URL session instances call on their
+    /// delegates to handle session-level events, like session life cycle changes.
     var urlSessionDelegate: URLSessionDelegate? {
         didSet {
             userDataDelegate = urlSessionDelegate as? URLSessionDataDelegate

@@ -9,25 +9,30 @@ import Typhoon
 
 // MARK: - RequestProcessor
 
+/// An object that handles request processing.
 actor RequestProcessor {
     // MARK: Properties
 
+    /// The network layer's configuration.
     private let configuration: Configuration
+    /// The object that coordinates a group of related, network data transfer tasks.
     private let session: URLSession
+    /// The data request handler.
     private let dataRequestHandler: any IDataRequestHandler
-
+    /// The request builder.
     private let requestBuilder: IRequestBuilder
+    /// The retry policy service.
     private let retryPolicyService: IRetryPolicyService
-
-    struct Configuration {
-        let sessionConfiguration: URLSessionConfiguration
-        let sessionDelegate: URLSessionDelegate?
-        let sessionDelegateQueue: OperationQueue?
-        let jsonDecoder: JSONDecoder
-    }
 
     // MARK: Initialization
 
+    /// Creates a new `RequestProcessor` instance.
+    ///
+    /// - Parameters:
+    ///   - configure: The network layer's configuration.
+    ///   - requestBuilder: The request builder.
+    ///   - dataRequestHandler: The data request handler.
+    ///   - retryPolicyService: The retry policy service.
     init(
         configuration: Configuration,
         requestBuilder: IRequestBuilder,
@@ -47,6 +52,16 @@ actor RequestProcessor {
 
     // MARK: Private
 
+    /// Performs a network request.
+    ///
+    /// - Parameters:
+    ///   - request: The network request.
+    ///   - strategy: The retry policy strategy.
+    ///   - delegate: A protocol that defines methods that URL session instances call on their delegates
+    ///               to handle session-level events, like session life cycle changes.
+    ///   - configure: A closure to configure the URLRequest.
+    ///
+    /// - Returns: The response from the network request.
     private func performRequest<T: IRequest>(
         _ request: T,
         strategy: RetryPolicyStrategy? = nil,
@@ -68,6 +83,13 @@ actor RequestProcessor {
         }
     }
 
+    /// Performs a request with a retry policy.
+    ///
+    /// - Parameters:
+    ///   - strategy: The strategy for retrying the request.
+    ///   - send: The closure that sends the request.
+    ///
+    /// - Returns: The response from the network request.
     private func performRequest<T>(
         strategy: RetryPolicyStrategy? = nil,
         _ send: () async throws -> T

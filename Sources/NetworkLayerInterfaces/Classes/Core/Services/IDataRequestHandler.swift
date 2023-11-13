@@ -4,10 +4,9 @@
 //
 
 import Foundation
-import NetworkLayerInterfaces
 
 /// A protocol for handling data requests.
-protocol IDataRequestHandler: URLSessionTaskDelegate & URLSessionDataDelegate {
+public protocol IDataRequestHandler: URLSessionTaskDelegate & URLSessionDataDelegate {
     /// Starts a data task for handling network requests.
     ///
     /// - Parameters:
