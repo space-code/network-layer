@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import Typhoon
 
 // MARK: - IRequestProcessor
 
@@ -19,6 +20,7 @@ public protocol IRequestProcessor {
     /// needed.
     func send<T: IRequest, M: Decodable>(
         _ request: T,
+        strategy: RetryPolicyStrategy?,
         delegate: URLSessionDelegate?,
         configure: ((inout URLRequest) throws -> Void)?
     ) async throws -> M
@@ -30,8 +32,9 @@ extension IRequestProcessor {
     /// - Parameters:
     ///   - request: The request object conforming to the `IRequest` protocol, representing the network request to be sent.
     func send<T: IRequest, M: Decodable>(
-        _ request: T
+        _ request: T,
+        strategy: RetryPolicyStrategy?
     ) async throws -> M {
-        try await send(request, delegate: nil, configure: nil)
+        try await send(request, strategy: strategy, delegate: nil, configure: nil)
     }
 }

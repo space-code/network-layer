@@ -5,6 +5,7 @@
 
 import Foundation
 import NetworkLayerInterfaces
+import Typhoon
 
 // MARK: - RequestProcessor
 
@@ -16,6 +17,7 @@ actor RequestProcessor {
     private let dataRequestHandler: any IDataRequestHandler
 
     private let requestBuilder: IRequestBuilder
+    private let retryPolicyService: IRetryPolicyService
 
     struct Configuration {
         let sessionConfiguration: URLSessionConfiguration
@@ -26,10 +28,16 @@ actor RequestProcessor {
 
     // MARK: Initialization
 
-    init(configuration: Configuration, requestBuilder: IRequestBuilder, dataRequestHandler: any IDataRequestHandler) {
+    init(
+        configuration: Configuration,
+        requestBuilder: IRequestBuilder,
+        dataRequestHandler: any IDataRequestHandler,
+        retryPolicyService: IRetryPolicyService
+    ) {
         self.configuration = configuration
         self.requestBuilder = requestBuilder
         self.dataRequestHandler = dataRequestHandler
+        self.retryPolicyService = retryPolicyService
         session = URLSession(
             configuration: configuration.sessionConfiguration,
             delegate: dataRequestHandler,
@@ -41,31 +49,30 @@ actor RequestProcessor {
 
     private func performRequest<T: IRequest>(
         _ request: T,
+        strategy: RetryPolicyStrategy? = nil,
         delegate: URLSessionDelegate?,
         configure _: ((inout URLRequest) throws -> Void)?
     ) async throws -> Response<Data> {
         guard let request = requestBuilder.build(request) else {
-            throw URLError(URLError.badURL)
+            throw NetworkLayerError.badURL
         }
 
-        return try await performRequest {
+        return try await performRequest(strategy: strategy) {
             let task = session.dataTask(with: request)
 
             do {
-                let response = try await dataRequestHandler.startDataTask(task, session: session, delegate: delegate)
-                return response
+                return try await dataRequestHandler.startDataTask(task, session: session, delegate: delegate)
             } catch {
-                throw URLError(URLError.cancelled)
+                throw error
             }
         }
     }
 
-    private func performRequest<T>(attempts _: Int = 1, _ send: () async throws -> T) async throws -> T {
-        do {
-            return try await send()
-        } catch {
-            throw error
-        }
+    private func performRequest<T>(
+        strategy: RetryPolicyStrategy? = nil,
+        _ send: () async throws -> T
+    ) async throws -> T {
+        try await retryPolicyService.retry(strategy: strategy, send)
     }
 }
 
@@ -74,6 +81,7 @@ actor RequestProcessor {
 extension RequestProcessor: IRequestProcessor {
     func send<T: IRequest, M: Decodable>(
         _ request: T,
+        strategy _: RetryPolicyStrategy? = nil,
         delegate: URLSessionDelegate? = nil,
         configure: ((inout URLRequest) throws -> Void)? = nil
     ) async throws -> M {

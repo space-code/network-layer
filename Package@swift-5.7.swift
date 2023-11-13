@@ -15,11 +15,18 @@ let package = Package(
         .library(name: "NetworkLayer", targets: ["NetworkLayer"]),
         .library(name: "NetworkLayerInterfaces", targets: ["NetworkLayerInterfaces"]),
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/space-code/atomic", .upToNextMajor(from: "1.0.0")),
+        .package(url: "https://github.com/space-code/typhoon", .upToNextMajor(from: "1.0.0")),
+    ],
     targets: [
         .target(
             name: "NetworkLayer",
-            dependencies: ["NetworkLayerInterfaces"]
+            dependencies: [
+                "NetworkLayerInterfaces",
+                .product(name: "Atomic", package: "atomic"),
+                .product(name: "Typhoon", package: "typhoon"),
+            ]
         ),
         .target(
             name: "NetworkLayerInterfaces",
