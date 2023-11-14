@@ -60,16 +60,38 @@ extension DataRequestHandler {
         if handler.data == nil {
             handler.data = Data()
         }
+
         handler.data?.append(data)
+    }
+
+    func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
+        userDataDelegate?.urlSession?(session, didBecomeInvalidWithError: error)
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        dataTask: URLSessionDataTask,
+        willCacheResponse proposedResponse: CachedURLResponse,
+        completionHandler: @escaping (CachedURLResponse?) -> Void
+    ) {
+        userDataDelegate?.urlSession?(
+            session,
+            dataTask: dataTask,
+            willCacheResponse: proposedResponse,
+            completionHandler: completionHandler
+        )
+        completionHandler(proposedResponse)
     }
 }
 
 // MARK: URLSessionTaskDelegate
 
 extension DataRequestHandler {
-    func urlSession(_: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard let handler = handlers[task] else { return }
         handlers[task] = nil
+
+        userDataDelegate?.urlSession?(session, task: task, didCompleteWithError: error)
 
         if let error = error {
             handler.completion?(.failure(error))
@@ -82,6 +104,66 @@ extension DataRequestHandler {
                 handler.completion?(.failure(URLError(.unknown)))
             }
         }
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        userDataDelegate?.urlSession?(session, task: task, didFinishCollecting: metrics)
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        willPerformHTTPRedirection response: HTTPURLResponse,
+        newRequest request: URLRequest,
+        completionHandler: @escaping (URLRequest?) -> Void
+    ) {
+        userDataDelegate?.urlSession?(
+            session,
+            task: task,
+            willPerformHTTPRedirection: response,
+            newRequest: request,
+            completionHandler: completionHandler
+        )
+        completionHandler(request)
+    }
+
+    func urlSession(_ session: URLSession, taskIsWaitingForConnectivity task: URLSessionTask) {
+        userDataDelegate?.urlSession?(session, taskIsWaitingForConnectivity: task)
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        didReceive challenge: URLAuthenticationChallenge,
+        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+    ) {
+        userDataDelegate?.urlSession?(session, didReceive: challenge, completionHandler: completionHandler)
+        completionHandler(.performDefaultHandling, nil)
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        willBeginDelayedRequest request: URLRequest,
+        completionHandler: @escaping (URLSession.DelayedRequestDisposition, URLRequest?) -> Void
+    ) {
+        userDataDelegate?.urlSession?(session, task: task, willBeginDelayedRequest: request, completionHandler: completionHandler)
+        completionHandler(.continueLoading, nil)
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        didSendBodyData bytesSent: Int64,
+        totalBytesSent: Int64,
+        totalBytesExpectedToSend: Int64
+    ) {
+        userDataDelegate?.urlSession?(
+            session,
+            task: task,
+            didSendBodyData: bytesSent,
+            totalBytesSent: totalBytesSent,
+            totalBytesExpectedToSend: totalBytesExpectedToSend
+        )
     }
 }
 

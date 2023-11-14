@@ -66,11 +66,13 @@ actor RequestProcessor {
         _ request: T,
         strategy: RetryPolicyStrategy? = nil,
         delegate: URLSessionDelegate?,
-        configure _: ((inout URLRequest) throws -> Void)?
+        configure: ((inout URLRequest) throws -> Void)?
     ) async throws -> Response<Data> {
-        guard let request = requestBuilder.build(request) else {
+        guard var request = requestBuilder.build(request) else {
             throw NetworkLayerError.badURL
         }
+
+        try configure?(&request)
 
         return try await performRequest(strategy: strategy) {
             let task = session.dataTask(with: request)
