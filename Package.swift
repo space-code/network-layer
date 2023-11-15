@@ -39,6 +39,7 @@ let package = Package(
             name: "NetworkLayerTests",
             dependencies: [
                 "NetworkLayer",
+                .product(name: "Typhoon", package: "typhoon"),
             ]
         ),
     ]

@@ -18,6 +18,8 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
     private let dataRequestHandler: IDataRequestHandler
     /// The retry policy service.
     private let retryPolicyService: IRetryPolicyService
+    /// The request processor delegate.
+    private let delegate: RequestProcessorDelegate
 
     // MARK: Initialization
 
@@ -25,12 +27,14 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
         configure: Configuration,
         requestBuilder: IRequestBuilder,
         dataRequestHandler: IDataRequestHandler,
-        retryPolicyService: IRetryPolicyService
+        retryPolicyService: IRetryPolicyService,
+        delegate: RequestProcessorDelegate
     ) {
         self.configure = configure
         self.requestBuilder = requestBuilder
         self.dataRequestHandler = dataRequestHandler
         self.retryPolicyService = retryPolicyService
+        self.delegate = delegate
     }
 
     // MARK: INetworkLayerAssembly
@@ -40,7 +44,8 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
             configuration: configure,
             requestBuilder: requestBuilder,
             dataRequestHandler: dataRequestHandler,
-            retryPolicyService: retryPolicyService
+            retryPolicyService: retryPolicyService,
+            delegate: delegate
         )
     }
 }

@@ -24,6 +24,9 @@ actor RequestProcessor {
     /// The retry policy service.
     private let retryPolicyService: IRetryPolicyService
 
+    /// The delegate.
+    private weak var delegate: RequestProcessorDelegate?
+
     // MARK: Initialization
 
     /// Creates a new `RequestProcessor` instance.
@@ -37,12 +40,14 @@ actor RequestProcessor {
         configuration: Configuration,
         requestBuilder: IRequestBuilder,
         dataRequestHandler: any IDataRequestHandler,
-        retryPolicyService: IRetryPolicyService
+        retryPolicyService: IRetryPolicyService,
+        delegate: RequestProcessorDelegate?
     ) {
         self.configuration = configuration
         self.requestBuilder = requestBuilder
         self.dataRequestHandler = dataRequestHandler
         self.retryPolicyService = retryPolicyService
+        self.delegate = delegate
         session = URLSession(
             configuration: configuration.sessionConfiguration,
             delegate: dataRequestHandler,
@@ -73,6 +78,8 @@ actor RequestProcessor {
         }
 
         return try await performRequest(strategy: strategy) {
+            try await self.delegate?.requestProcessor(self, willSendRequest: request)
+
             let task = session.dataTask(with: request)
 
             do {
