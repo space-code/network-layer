@@ -5,6 +5,7 @@
 
 @testable import NetworkLayer
 import NetworkLayerInterfaces
+import Typhoon
 import XCTest
 
 final class RequestProcessorTests: XCTestCase {
@@ -12,8 +13,9 @@ final class RequestProcessorTests: XCTestCase {
 
     private var requestBuilderMock: RequestBuilderMock!
     private var dataRequestHandler: DataRequestHandlerMock!
-    private var retryPolicyMock: RetryPolicyServiceMock<Int>!
+    private var retryPolicyMock: RetryPolicyService!
     private var delegateMock: RequestProcessorDelegateMock!
+    private var interceptorMock: AuthentificatorInterceptorMock!
 
     private var sut: RequestProcessor!
 
@@ -23,8 +25,14 @@ final class RequestProcessorTests: XCTestCase {
         super.setUp()
         requestBuilderMock = RequestBuilderMock()
         dataRequestHandler = DataRequestHandlerMock()
-        retryPolicyMock = RetryPolicyServiceMock<Int>()
+        retryPolicyMock = RetryPolicyService(
+            strategy: .constant(
+                retry: 5,
+                duration: .seconds(.zero)
+            )
+        )
         delegateMock = RequestProcessorDelegateMock()
+        interceptorMock = AuthentificatorInterceptorMock()
         sut = RequestProcessor(
             configuration: Configuration(
                 sessionConfiguration: .default,
@@ -35,7 +43,8 @@ final class RequestProcessorTests: XCTestCase {
             requestBuilder: requestBuilderMock,
             dataRequestHandler: dataRequestHandler,
             retryPolicyService: retryPolicyMock,
-            delegate: delegateMock
+            delegate: delegateMock,
+            interceptor: interceptorMock
         )
     }
 
@@ -44,20 +53,82 @@ final class RequestProcessorTests: XCTestCase {
         dataRequestHandler = nil
         retryPolicyMock = nil
         delegateMock = nil
+        interceptorMock = nil
         sut = nil
         super.tearDown()
     }
 
     // MARK: Tests
 
-    func test_thatRequestProcessorInvokesDelegate_whenRequestWillPerform() async throws {
+    func test_thatRequestProcessorSignsRequest_whenRequestRequiresAuthentication() async {
         // given
-        let request = RequestStub()
+        requestBuilderMock.stubbedBuildResult = URLRequest.fake()
+        dataRequestHandler.stubbedStartDataTask = .init(data: Data(), response: .init(), task: URLSessionTask())
+
+        let request = RequestMock()
+        request.stubbedRequiresAuthentication = true
 
         // when
-        let _ = try await sut.send(request) as Int
+        do {
+            let _ = try await sut.send(request) as Int
+        } catch {}
 
         // then
-//        XCTAssertEqual(request.re, <#T##expression2: Equatable##Equatable#>)
+        XCTAssertTrue(interceptorMock.invokedAdapt)
+        XCTAssertFalse(interceptorMock.invokedRefresh)
+    }
+
+    func test_thatRequestProcessorDoesNotSignRequest_whenRequestDoesNotRequireAuthentication() async {
+        // given
+        requestBuilderMock.stubbedBuildResult = URLRequest.fake()
+        dataRequestHandler.stubbedStartDataTask = .init(data: Data(), response: .init(), task: URLSessionTask())
+
+        let request = RequestMock()
+        request.stubbedRequiresAuthentication = false
+
+        // when
+        do {
+            let _ = try await sut.send(request) as Int
+        } catch {}
+
+        // then
+        XCTAssertFalse(interceptorMock.invokedAdapt)
+        XCTAssertFalse(interceptorMock.invokedRefresh)
+    }
+
+    func test_thatRequestProcessorRefreshesCredential_whenCredentialIsNotValid() async {
+        // given
+        requestBuilderMock.stubbedBuildResult = URLRequest.fake()
+        dataRequestHandler.startDataTaskThrowError = URLError(.unknown)
+
+        let request = RequestMock()
+        request.stubbedRequiresAuthentication = true
+
+        // when
+        do {
+            let _ = try await sut.send(request) as Int
+        } catch {}
+
+        // then
+        XCTAssertTrue(interceptorMock.invokedAdapt)
+        XCTAssertTrue(interceptorMock.invokedRefresh)
+    }
+
+    func test_thatRequestProcessorDoesNotRefreshesCredential_whenRequestDoesNotRequireAuthentication() async {
+        // given
+        requestBuilderMock.stubbedBuildResult = URLRequest.fake()
+        dataRequestHandler.startDataTaskThrowError = URLError(.unknown)
+
+        let request = RequestMock()
+        request.stubbedRequiresAuthentication = false
+
+        // when
+        do {
+            let _ = try await sut.send(request) as Int
+        } catch {}
+
+        // then
+        XCTAssertFalse(interceptorMock.invokedAdapt)
+        XCTAssertFalse(interceptorMock.invokedRefresh)
     }
 }

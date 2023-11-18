@@ -16,12 +16,14 @@ public protocol INetworkLayerAssembly {
     ///   - dataRequestHandler: The data request handler.
     ///   - retryPolicyService: The retry policy service.
     ///   - delegate: The request processor delegate.
+    ///   - interceptor: The authenticator interceptor.
     init(
         configure: Configuration,
         requestBuilder: IRequestBuilder,
         dataRequestHandler: IDataRequestHandler,
         retryPolicyService: IRetryPolicyService,
-        delegate: RequestProcessorDelegate
+        delegate: RequestProcessorDelegate,
+        interceptor: IAuthenticatorInterceptor?
     )
 
     /// Assembles a request processor.

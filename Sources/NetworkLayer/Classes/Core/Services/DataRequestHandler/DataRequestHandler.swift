@@ -98,7 +98,7 @@ extension DataRequestHandler {
         } else {
             if let response = task.response {
                 let data = handler.data ?? Data()
-                let response = Response(data: data, response: response)
+                let response = Response(data: data, response: response, task: task)
                 handler.completion?(.success(response))
             } else {
                 handler.completion?(.failure(URLError(.unknown)))

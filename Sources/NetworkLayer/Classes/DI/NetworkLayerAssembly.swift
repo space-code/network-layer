@@ -20,6 +20,8 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
     private let retryPolicyService: IRetryPolicyService
     /// The request processor delegate.
     private let delegate: RequestProcessorDelegate
+    /// The authenticator interceptor.
+    private let interceptor: IAuthenticatorInterceptor?
 
     // MARK: Initialization
 
@@ -28,13 +30,15 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
         requestBuilder: IRequestBuilder,
         dataRequestHandler: IDataRequestHandler,
         retryPolicyService: IRetryPolicyService,
-        delegate: RequestProcessorDelegate
+        delegate: RequestProcessorDelegate,
+        interceptor: IAuthenticatorInterceptor?
     ) {
         self.configure = configure
         self.requestBuilder = requestBuilder
         self.dataRequestHandler = dataRequestHandler
         self.retryPolicyService = retryPolicyService
         self.delegate = delegate
+        self.interceptor = interceptor
     }
 
     // MARK: INetworkLayerAssembly
@@ -45,7 +49,8 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
             requestBuilder: requestBuilder,
             dataRequestHandler: dataRequestHandler,
             retryPolicyService: retryPolicyService,
-            delegate: delegate
+            delegate: delegate,
+            interceptor: interceptor
         )
     }
 }

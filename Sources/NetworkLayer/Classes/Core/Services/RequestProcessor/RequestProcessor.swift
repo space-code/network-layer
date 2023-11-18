@@ -23,7 +23,8 @@ actor RequestProcessor {
     private let requestBuilder: IRequestBuilder
     /// The retry policy service.
     private let retryPolicyService: IRetryPolicyService
-
+    /// The authenticator interceptor.
+    private let interceptor: IAuthenticatorInterceptor?
     /// The delegate.
     private weak var delegate: RequestProcessorDelegate?
 
@@ -41,13 +42,15 @@ actor RequestProcessor {
         requestBuilder: IRequestBuilder,
         dataRequestHandler: any IDataRequestHandler,
         retryPolicyService: IRetryPolicyService,
-        delegate: RequestProcessorDelegate?
+        delegate: RequestProcessorDelegate?,
+        interceptor: IAuthenticatorInterceptor?
     ) {
         self.configuration = configuration
         self.requestBuilder = requestBuilder
         self.dataRequestHandler = dataRequestHandler
         self.retryPolicyService = retryPolicyService
         self.delegate = delegate
+        self.interceptor = interceptor
         session = URLSession(
             configuration: configuration.sessionConfiguration,
             delegate: dataRequestHandler,
@@ -73,21 +76,45 @@ actor RequestProcessor {
         delegate: URLSessionDelegate?,
         configure: ((inout URLRequest) throws -> Void)?
     ) async throws -> Response<Data> {
-        guard let request = requestBuilder.build(request, configure) else {
+        guard var urlRequest = requestBuilder.build(request, configure) else {
             throw NetworkLayerError.badURL
         }
 
         return try await performRequest(strategy: strategy) {
-            try await self.delegate?.requestProcessor(self, willSendRequest: request)
+            try await self.delegate?.requestProcessor(self, willSendRequest: urlRequest)
+            try await self.adapt(request, urlRequest: &urlRequest, session: session)
 
-            let task = session.dataTask(with: request)
+            let task = session.dataTask(with: urlRequest)
 
             do {
                 return try await dataRequestHandler.startDataTask(task, session: session, delegate: delegate)
             } catch {
+                try await refreshCredentialIfNeeded(
+                    request,
+                    urlRequest: &urlRequest,
+                    response: HTTPURLResponse(),
+                    session: session,
+                    error: error
+                )
                 throw error
             }
         }
+    }
+
+    private func adapt<T: IRequest>(_ request: T, urlRequest: inout URLRequest, session: URLSession) async throws {
+        guard request.requiresAuthentication else { return }
+        try await interceptor?.adapt(request: &urlRequest, for: session)
+    }
+
+    private func refreshCredentialIfNeeded<T: IRequest>(
+        _ request: T,
+        urlRequest: inout URLRequest,
+        response: HTTPURLResponse,
+        session: URLSession,
+        error: Error
+    ) async throws {
+        guard request.requiresAuthentication else { return }
+        try await interceptor?.refresh(urlRequest, with: response, for: session, dutTo: error)
     }
 
     /// Performs a request with a retry policy.
@@ -110,11 +137,11 @@ actor RequestProcessor {
 extension RequestProcessor: IRequestProcessor {
     func send<T: IRequest, M: Decodable>(
         _ request: T,
-        strategy _: RetryPolicyStrategy? = nil,
+        strategy: RetryPolicyStrategy? = nil,
         delegate: URLSessionDelegate? = nil,
         configure: ((inout URLRequest) throws -> Void)? = nil
     ) async throws -> M {
-        let response = try await performRequest(request, delegate: delegate, configure: configure)
+        let response = try await performRequest(request, strategy: strategy, delegate: delegate, configure: configure)
         let item = try configuration.jsonDecoder.decode(M.self, from: response.data)
         return item
     }

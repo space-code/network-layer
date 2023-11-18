@@ -12,6 +12,7 @@ final class DataRequestHandlerMock: NSObject, IDataRequestHandler {
     var invokedStartDataTaskParameters: (task: URLSessionDataTask, session: URLSession, delegate: URLSessionDelegate?)?
     var invokedStartDataTaskParametersList = [(task: URLSessionDataTask, session: URLSession, delegate: URLSessionDelegate?)]()
     var stubbedStartDataTask: Response<Data>!
+    var startDataTaskThrowError: Error?
 
     func startDataTask(
         _ task: URLSessionDataTask,
@@ -22,6 +23,9 @@ final class DataRequestHandlerMock: NSObject, IDataRequestHandler {
         invokedStartDataTaskCount += 1
         invokedStartDataTaskParameters = (task, session, delegate)
         invokedStartDataTaskParametersList.append((task, session, delegate))
+        if let error = startDataTaskThrowError {
+            throw error
+        }
         return stubbedStartDataTask
     }
 }
