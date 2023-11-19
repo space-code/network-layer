@@ -27,7 +27,7 @@ public final class AuthenticatorInterceptor<Authenticator: IAuthenticator>: IAut
 
     // MARK: IAuthentificatorInterceptor
 
-    public func adapt(request: inout URLRequest, for session: URLSession) async throws {
+    public func adapt(request: URLRequest, for session: URLSession) async throws {
         guard let credential else {
             throw AuthenticatorInterceptorError.missingCredential
         }
@@ -35,17 +35,16 @@ public final class AuthenticatorInterceptor<Authenticator: IAuthenticator>: IAut
         if credential.requiresRefresh {
             try await refresh(credential, for: session)
         } else {
-            try await authenticator.apply(credential, to: &request)
+            try await authenticator.apply(credential, to: request)
         }
     }
 
     public func refresh(
         _ request: URLRequest,
         with response: HTTPURLResponse,
-        for session: URLSession,
-        dutTo error: Error
+        for session: URLSession
     ) async throws {
-        guard authenticator.didRequest(request, with: response, failDueToAuthenticationError: error) else {
+        guard isRequireRefresh(request, response: response) else {
             return
         }
 
@@ -58,6 +57,10 @@ public final class AuthenticatorInterceptor<Authenticator: IAuthenticator>: IAut
         }
 
         try await refresh(credential, for: session)
+    }
+
+    public func isRequireRefresh(_ request: URLRequest, response: HTTPURLResponse) -> Bool {
+        authenticator.didRequest(request, with: response)
     }
 
     // MARK: Private

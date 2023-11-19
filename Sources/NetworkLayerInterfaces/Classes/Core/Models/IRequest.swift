@@ -5,6 +5,8 @@
 
 import Foundation
 
+// MARK: - IRequest
+
 /// A type to which all requests must conform.
 public protocol IRequest {
     /// The base `URL` for the resource.
@@ -30,4 +32,31 @@ public protocol IRequest {
 
     /// A dictonary that contains the request's body.
     var httpBody: [String: Any]? { get }
+}
+
+public extension IRequest {
+    /// A dictionary that contains the parameters to be encoded into the request's header.
+    var headers: [String: String]? {
+        nil
+    }
+
+    /// A dictionary that contains the parameters to be encoded into the request.
+    var parameters: [String: String]? {
+        nil
+    }
+
+    /// A Boolean value indicating whether authentication is required.
+    var requiresAuthentication: Bool {
+        false
+    }
+
+    /// Request's timeout interval.
+    var timeoutInterval: TimeInterval {
+        60
+    }
+
+    /// A dictonary that contains the request's body.
+    var httpBody: [String: Any]? {
+        nil
+    }
 }

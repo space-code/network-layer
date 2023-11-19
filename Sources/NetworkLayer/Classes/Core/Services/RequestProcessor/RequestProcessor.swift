@@ -76,45 +76,57 @@ actor RequestProcessor {
         delegate: URLSessionDelegate?,
         configure: ((inout URLRequest) throws -> Void)?
     ) async throws -> Response<Data> {
-        guard var urlRequest = requestBuilder.build(request, configure) else {
+        guard let urlRequest = requestBuilder.build(request, configure) else {
             throw NetworkLayerError.badURL
         }
 
+        try await adapt(request, urlRequest: urlRequest, session: session)
+
         return try await performRequest(strategy: strategy) {
             try await self.delegate?.requestProcessor(self, willSendRequest: urlRequest)
-            try await self.adapt(request, urlRequest: &urlRequest, session: session)
 
             let task = session.dataTask(with: urlRequest)
 
             do {
-                return try await dataRequestHandler.startDataTask(task, session: session, delegate: delegate)
+                let response = try await dataRequestHandler.startDataTask(task, session: session, delegate: delegate)
+
+                if request.requiresAuthentication {
+                    let isRefreshedCredential = try await refresh(
+                        urlRequest: urlRequest,
+                        response: response,
+                        session: session
+                    )
+
+                    if isRefreshedCredential {
+                        throw AuthenticatorInterceptorError.missingCredential
+                    }
+                }
+
+                return response
             } catch {
-                try await refreshCredentialIfNeeded(
-                    request,
-                    urlRequest: &urlRequest,
-                    response: HTTPURLResponse(),
-                    session: session,
-                    error: error
-                )
                 throw error
             }
         }
     }
 
-    private func adapt<T: IRequest>(_ request: T, urlRequest: inout URLRequest, session: URLSession) async throws {
+    private func adapt<T: IRequest>(_ request: T, urlRequest: URLRequest, session: URLSession) async throws {
         guard request.requiresAuthentication else { return }
-        try await interceptor?.adapt(request: &urlRequest, for: session)
+        try await interceptor?.adapt(request: urlRequest, for: session)
     }
 
-    private func refreshCredentialIfNeeded<T: IRequest>(
-        _ request: T,
-        urlRequest: inout URLRequest,
-        response: HTTPURLResponse,
-        session: URLSession,
-        error: Error
-    ) async throws {
-        guard request.requiresAuthentication else { return }
-        try await interceptor?.refresh(urlRequest, with: response, for: session, dutTo: error)
+    private func refresh<T>(
+        urlRequest: URLRequest,
+        response: Response<T>,
+        session: URLSession
+    ) async throws -> Bool {
+        guard let interceptor, let response = response.response as? HTTPURLResponse else { return false }
+
+        if interceptor.isRequireRefresh(urlRequest, response: response) {
+            try await interceptor.refresh(urlRequest, with: response, for: session)
+            return true
+        }
+
+        return false
     }
 
     /// Performs a request with a retry policy.
@@ -128,7 +140,11 @@ actor RequestProcessor {
         strategy: RetryPolicyStrategy? = nil,
         _ send: () async throws -> T
     ) async throws -> T {
-        try await retryPolicyService.retry(strategy: strategy, send)
+        do {
+            return try await send()
+        } catch {
+            return try await retryPolicyService.retry(strategy: strategy, send)
+        }
     }
 }
 

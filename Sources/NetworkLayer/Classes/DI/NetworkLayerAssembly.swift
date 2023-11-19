@@ -14,12 +14,10 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
     private let configure: Configuration
     /// The request builder.
     private let requestBuilder: IRequestBuilder
-    /// The data request handler.
-    private let dataRequestHandler: IDataRequestHandler
     /// The retry policy service.
-    private let retryPolicyService: IRetryPolicyService
+    private let retryPolicyStrategy: RetryPolicyStrategy?
     /// The request processor delegate.
-    private let delegate: RequestProcessorDelegate
+    private let delegate: RequestProcessorDelegate?
     /// The authenticator interceptor.
     private let interceptor: IAuthenticatorInterceptor?
 
@@ -28,15 +26,13 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
     public init(
         configure: Configuration,
         requestBuilder: IRequestBuilder,
-        dataRequestHandler: IDataRequestHandler,
-        retryPolicyService: IRetryPolicyService,
-        delegate: RequestProcessorDelegate,
+        retryPolicyStrategy: RetryPolicyStrategy?,
+        delegate: RequestProcessorDelegate?,
         interceptor: IAuthenticatorInterceptor?
     ) {
         self.configure = configure
         self.requestBuilder = requestBuilder
-        self.dataRequestHandler = dataRequestHandler
-        self.retryPolicyService = retryPolicyService
+        self.retryPolicyStrategy = retryPolicyStrategy
         self.delegate = delegate
         self.interceptor = interceptor
     }
@@ -47,10 +43,16 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
         RequestProcessor(
             configuration: configure,
             requestBuilder: requestBuilder,
-            dataRequestHandler: dataRequestHandler,
-            retryPolicyService: retryPolicyService,
+            dataRequestHandler: DataRequestHandler(),
+            retryPolicyService: RetryPolicyService(strategy: retryPolicyStrategy ?? defaultStrategy),
             delegate: delegate,
             interceptor: interceptor
         )
+    }
+
+    // MARK: Private
+
+    private var defaultStrategy: RetryPolicyStrategy {
+        .constant(retry: 5, duration: .seconds(1))
     }
 }

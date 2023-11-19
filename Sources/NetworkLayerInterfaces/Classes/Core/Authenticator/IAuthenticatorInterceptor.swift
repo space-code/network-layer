@@ -12,13 +12,21 @@ public protocol IAuthenticatorInterceptor {
     /// - Parameters:
     ///   - request: The URLRequest to be adapted.
     ///   - session: The URLSession for which the request is being adapted.
-    func adapt(request: inout URLRequest, for session: URLSession) async throws
+    func adapt(request: URLRequest, for session: URLSession) async throws
 
     /// Refreshes credential for the request.
     ///
     /// - Parameters:
     ///   - request: The URLRequest to be refreshed.
     ///   - session: The URLSession for which the request is being refreshed.
-    ///   - error: The error occurred during the request.
-    func refresh(_ request: URLRequest, with response: HTTPURLResponse, for session: URLSession, dutTo error: Error) async throws
+    func refresh(_ request: URLRequest, with response: HTTPURLResponse, for session: URLSession) async throws
+
+    /// <#Description#>
+    ///
+    /// - Parameters:
+    ///   - request: <#request description#>
+    ///   - response: <#response description#>
+    ///
+    /// - Returns: <#description#>
+    func isRequireRefresh(_ request: URLRequest, response: HTTPURLResponse) -> Bool
 }

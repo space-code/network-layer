@@ -14,7 +14,7 @@ public protocol IAuthenticator {
     /// - Parameters:
     ///   - credential: The `Credential`.
     ///   - urlRequest: The `URLRequest`.
-    func apply(_ credential: Credential, to urlRequest: inout URLRequest) async throws
+    func apply(_ credential: Credential, to urlRequest: URLRequest) async throws
 
     /// Refreshes the `Credential`.
     ///
@@ -28,10 +28,9 @@ public protocol IAuthenticator {
     /// - Parameters:
     ///   - urlRequest: The `URLRequest`.
     ///   - response: The `HTTPURLResponse`.
-    ///   - error: The `Error`.
     ///
     /// - Returns: `true` if the `URLRequest` failed due to an authentication error, `false` otherwise.
-    func didRequest(_ urlRequest: URLRequest, with response: HTTPURLResponse, failDueToAuthenticationError error: Error) -> Bool
+    func didRequest(_ urlRequest: URLRequest, with response: HTTPURLResponse) -> Bool
 
     /// Determines whether the `URLRequest` is authenticated with the `Credential`.
     ///

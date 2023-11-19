@@ -4,7 +4,9 @@
 //
 
 import Foundation
-import protocol Typhoon.IRetryPolicyService
+import enum Typhoon.RetryPolicyStrategy
+
+// MARK: - INetworkLayerAssembly
 
 /// A type that represents a network layer assembly.
 public protocol INetworkLayerAssembly {
@@ -13,16 +15,14 @@ public protocol INetworkLayerAssembly {
     /// - Parameters:
     ///   - configure: The network layer's configuration.
     ///   - requestBuilder: The request builder.
-    ///   - dataRequestHandler: The data request handler.
-    ///   - retryPolicyService: The retry policy service.
+    ///   - retryPolicyStrategy: The retry policy strategy.
     ///   - delegate: The request processor delegate.
     ///   - interceptor: The authenticator interceptor.
     init(
         configure: Configuration,
         requestBuilder: IRequestBuilder,
-        dataRequestHandler: IDataRequestHandler,
-        retryPolicyService: IRetryPolicyService,
-        delegate: RequestProcessorDelegate,
+        retryPolicyStrategy: RetryPolicyStrategy?,
+        delegate: RequestProcessorDelegate?,
         interceptor: IAuthenticatorInterceptor?
     )
 
@@ -30,4 +30,13 @@ public protocol INetworkLayerAssembly {
     ///
     /// - Returns: A request processor.
     func assemble() -> IRequestProcessor
+}
+
+public extension INetworkLayerAssembly {
+    init(
+        configure: Configuration,
+        requestBuilder: IRequestBuilder
+    ) {
+        self.init(configure: configure, requestBuilder: requestBuilder, retryPolicyStrategy: nil, delegate: nil, interceptor: nil)
+    }
 }
