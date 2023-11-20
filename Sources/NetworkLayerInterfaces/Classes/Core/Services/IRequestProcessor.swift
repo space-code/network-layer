@@ -23,7 +23,7 @@ public protocol IRequestProcessor {
         strategy: RetryPolicyStrategy?,
         delegate: URLSessionDelegate?,
         configure: ((inout URLRequest) throws -> Void)?
-    ) async throws -> M
+    ) async throws -> Response<M>
 }
 
 extension IRequestProcessor {
@@ -34,7 +34,7 @@ extension IRequestProcessor {
     func send<T: IRequest, M: Decodable>(
         _ request: T,
         strategy: RetryPolicyStrategy?
-    ) async throws -> M {
+    ) async throws -> Response<M> {
         try await send(request, strategy: strategy, delegate: nil, configure: nil)
     }
 }

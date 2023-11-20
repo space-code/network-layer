@@ -156,9 +156,8 @@ extension RequestProcessor: IRequestProcessor {
         strategy: RetryPolicyStrategy? = nil,
         delegate: URLSessionDelegate? = nil,
         configure: ((inout URLRequest) throws -> Void)? = nil
-    ) async throws -> M {
+    ) async throws -> Response<M> {
         let response = try await performRequest(request, strategy: strategy, delegate: delegate, configure: configure)
-        let item = try configuration.jsonDecoder.decode(M.self, from: response.data)
-        return item
+        return try response.map { data in try self.configuration.jsonDecoder.decode(M.self, from: data) }
     }
 }
