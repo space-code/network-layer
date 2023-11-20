@@ -5,7 +5,7 @@
 
 import Foundation
 
-/// <#Description#>
+/// A protocol defining the interface for an authenticator type.
 public protocol IAuthenticator {
     associatedtype Credential: IAuthenticationCredential
 

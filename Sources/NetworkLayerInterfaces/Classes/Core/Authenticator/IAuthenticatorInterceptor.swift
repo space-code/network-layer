@@ -21,12 +21,12 @@ public protocol IAuthenticatorInterceptor {
     ///   - session: The URLSession for which the request is being refreshed.
     func refresh(_ request: URLRequest, with response: HTTPURLResponse, for session: URLSession) async throws
 
-    /// <#Description#>
+    /// Determines whether a request requires a credential refresh.
     ///
     /// - Parameters:
-    ///   - request: <#request description#>
-    ///   - response: <#response description#>
+    ///   - request: The URLRequest to check.
+    ///   - response: The HTTPURLResponse received for the request.
     ///
-    /// - Returns: <#description#>
+    /// - Returns: A boolean indicating whether a credential refresh is required.
     func isRequireRefresh(_ request: URLRequest, response: HTTPURLResponse) -> Bool
 }
