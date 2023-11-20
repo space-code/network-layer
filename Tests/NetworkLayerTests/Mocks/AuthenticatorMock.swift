@@ -14,7 +14,7 @@ final class AuthenticatorMock: IAuthenticator {
     var invokedApplyParameters: (credential: Credential, urlRequest: URLRequest)?
     var invokedApplyParametersList = [(credential: Credential, urlRequest: URLRequest)]()
 
-    func apply(_ credential: Credential, to urlRequest: inout URLRequest) async throws {
+    func apply(_ credential: Credential, to urlRequest: URLRequest) async throws {
         invokedApply = true
         invokedApplyCount += 1
         invokedApplyParameters = (credential, urlRequest)
@@ -37,15 +37,15 @@ final class AuthenticatorMock: IAuthenticator {
 
     var invokedDidRequest = false
     var invokedDidRequestCount = 0
-    var invokedDidRequestParameters: (urlRequest: URLRequest, response: HTTPURLResponse, error: Error)?
-    var invokedDidRequestParametersList = [(urlRequest: URLRequest, response: HTTPURLResponse, error: Error)]()
+    var invokedDidRequestParameters: (urlRequest: URLRequest, response: HTTPURLResponse)?
+    var invokedDidRequestParametersList = [(urlRequest: URLRequest, response: HTTPURLResponse)]()
     var stubbedDidRequestResult: Bool! = false
 
-    func didRequest(_ urlRequest: URLRequest, with response: HTTPURLResponse, failDueToAuthenticationError error: Error) -> Bool {
+    func didRequest(_ urlRequest: URLRequest, with response: HTTPURLResponse) -> Bool {
         invokedDidRequest = true
         invokedDidRequestCount += 1
-        invokedDidRequestParameters = (urlRequest, response, error)
-        invokedDidRequestParametersList.append((urlRequest, response, error))
+        invokedDidRequestParameters = (urlRequest, response)
+        invokedDidRequestParametersList.append((urlRequest, response))
         return stubbedDidRequestResult
     }
 

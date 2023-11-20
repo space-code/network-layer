@@ -31,7 +31,10 @@ public protocol IRequest {
     var httpMethod: HTTPMethod { get }
 
     /// A dictonary that contains the request's body.
-    var httpBody: [String: Any]? { get }
+    var httpBody: RequestBody? { get }
+
+    /// An alias for the cache policy.
+    var cachePolicy: URLRequest.CachePolicy { get }
 }
 
 public extension IRequest {
@@ -56,7 +59,12 @@ public extension IRequest {
     }
 
     /// A dictonary that contains the request's body.
-    var httpBody: [String: Any]? {
+    var httpBody: RequestBody? {
         nil
+    }
+
+    /// An alias for the cache policy.
+    var cachePolicy: URLRequest.CachePolicy {
+        .useProtocolCachePolicy
     }
 }

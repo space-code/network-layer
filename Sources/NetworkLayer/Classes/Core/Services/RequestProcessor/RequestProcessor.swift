@@ -76,7 +76,7 @@ actor RequestProcessor {
         delegate: URLSessionDelegate?,
         configure: ((inout URLRequest) throws -> Void)?
     ) async throws -> Response<Data> {
-        guard let urlRequest = requestBuilder.build(request, configure) else {
+        guard let urlRequest = try requestBuilder.build(request, configure) else {
             throw NetworkLayerError.badURL
         }
 

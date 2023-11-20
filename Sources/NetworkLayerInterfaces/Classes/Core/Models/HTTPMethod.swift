@@ -8,25 +8,25 @@ import Foundation
 /// Enum representing HTTP methods.
 ///
 /// See https://tools.ietf.org/html/rfc7231#section-4.3
-public enum HTTPMethod {
+public enum HTTPMethod: String {
     /// `CONNECT` method.
-    case connect
+    case connect = "CONNECT"
     /// `DELETE` method.
-    case delete
+    case delete = "DELETE"
     /// `GET` method.
-    case get
+    case get = "GET"
     /// `HEAD` method.
-    case head
+    case head = "HEAD"
     /// `OPTIONS` method.
-    case options
+    case options = "OPTIONS"
     /// `PATCH` method.
-    case patch
+    case patch = "PATCH"
     /// `POST` method.
-    case post
+    case post = "POST"
     /// `PUT` method.
-    case put
+    case put = "PUT"
     /// `QUERY` method.
-    case query
+    case query = "QUERY"
     /// `TRACE` method.
-    case trace
+    case trace = "TRACE"
 }

@@ -14,16 +14,16 @@ public protocol INetworkLayerAssembly {
     ///
     /// - Parameters:
     ///   - configure: The network layer's configuration.
-    ///   - requestBuilder: The request builder.
     ///   - retryPolicyStrategy: The retry policy strategy.
     ///   - delegate: The request processor delegate.
     ///   - interceptor: The authenticator interceptor.
+    ///   - jsonEncoder: The json encoder.
     init(
         configure: Configuration,
-        requestBuilder: IRequestBuilder,
         retryPolicyStrategy: RetryPolicyStrategy?,
         delegate: RequestProcessorDelegate?,
-        interceptor: IAuthenticatorInterceptor?
+        interceptor: IAuthenticatorInterceptor?,
+        jsonEncoder: JSONEncoder
     )
 
     /// Assembles a request processor.
@@ -34,9 +34,8 @@ public protocol INetworkLayerAssembly {
 
 public extension INetworkLayerAssembly {
     init(
-        configure: Configuration,
-        requestBuilder: IRequestBuilder
+        configure: Configuration
     ) {
-        self.init(configure: configure, requestBuilder: requestBuilder, retryPolicyStrategy: nil, delegate: nil, interceptor: nil)
+        self.init(configure: configure, retryPolicyStrategy: nil, delegate: nil, interceptor: nil, jsonEncoder: JSONEncoder())
     }
 }

@@ -12,5 +12,5 @@ public protocol IRequestBuilder {
     /// - Parameter request: The request object that defines the request details.
     ///
     /// - Returns: A `URLRequest` constructed based on the given data.
-    func build(_ request: IRequest, _ configure: ((inout URLRequest) throws -> Void)?) -> URLRequest?
+    func build(_ request: IRequest, _ configure: ((inout URLRequest) throws -> Void)?) throws -> URLRequest?
 }

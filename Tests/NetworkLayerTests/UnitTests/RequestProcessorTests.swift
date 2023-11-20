@@ -99,7 +99,8 @@ final class RequestProcessorTests: XCTestCase {
     func test_thatRequestProcessorRefreshesCredential_whenCredentialIsNotValid() async {
         // given
         requestBuilderMock.stubbedBuildResult = URLRequest.fake()
-        dataRequestHandler.startDataTaskThrowError = URLError(.unknown)
+        dataRequestHandler.stubbedStartDataTask = .init(data: Data(), response: HTTPURLResponse(), task: URLSessionTask())
+        interceptorMock.stubbedIsRequireRefreshResult = true
 
         let request = RequestMock()
         request.stubbedRequiresAuthentication = true

@@ -12,29 +12,29 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
 
     /// The network layer's configuration.
     private let configure: Configuration
-    /// The request builder.
-    private let requestBuilder: IRequestBuilder
     /// The retry policy service.
     private let retryPolicyStrategy: RetryPolicyStrategy?
     /// The request processor delegate.
     private let delegate: RequestProcessorDelegate?
     /// The authenticator interceptor.
     private let interceptor: IAuthenticatorInterceptor?
+    /// The json encoder.
+    private let jsonEncoder: JSONEncoder
 
     // MARK: Initialization
 
     public init(
         configure: Configuration,
-        requestBuilder: IRequestBuilder,
         retryPolicyStrategy: RetryPolicyStrategy?,
         delegate: RequestProcessorDelegate?,
-        interceptor: IAuthenticatorInterceptor?
+        interceptor: IAuthenticatorInterceptor?,
+        jsonEncoder: JSONEncoder
     ) {
         self.configure = configure
-        self.requestBuilder = requestBuilder
         self.retryPolicyStrategy = retryPolicyStrategy
         self.delegate = delegate
         self.interceptor = interceptor
+        self.jsonEncoder = jsonEncoder
     }
 
     // MARK: INetworkLayerAssembly
@@ -54,5 +54,20 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
 
     private var defaultStrategy: RetryPolicyStrategy {
         .constant(retry: 5, duration: .seconds(1))
+    }
+
+    private var requestBuilder: IRequestBuilder {
+        RequestBuilder(
+            parametersEncoder: parametersEncoder,
+            requestBodyEncoder: requestBodyEncoder
+        )
+    }
+
+    private var parametersEncoder: IRequestParametersEncoder {
+        RequestParametersEncoder()
+    }
+
+    private var requestBodyEncoder: IRequestBodyEncoder {
+        RequestBodyEncoder(jsonEncoder: jsonEncoder)
     }
 }
