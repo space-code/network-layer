@@ -6,7 +6,7 @@
 import Foundation
 
 extension URLRequest {
-    static func fake() -> URLRequest {
-        URLRequest(url: URL(string: "https://google.com/")!)
+    static func fake(string: String = "https://google.com/") -> URLRequest {
+        URLRequest(url: URL(string: string)!)
     }
 }

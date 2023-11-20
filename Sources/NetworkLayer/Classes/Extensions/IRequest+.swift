@@ -7,7 +7,10 @@ import Foundation
 import NetworkLayerInterfaces
 
 extension IRequest {
-    var fullPath: String {
-        [domainName, path].joined(separator: "/")
+    var fullPath: String? {
+        if !domainName.isEmpty {
+            return [domainName, path].joined(separator: "/")
+        }
+        return nil
     }
 }

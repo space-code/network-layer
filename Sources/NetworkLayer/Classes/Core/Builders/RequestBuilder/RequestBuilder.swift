@@ -24,8 +24,11 @@ final class RequestBuilder: IRequestBuilder {
 
     // MARK: IRequestBuilder
 
-    func build(_ request: NetworkLayerInterfaces.IRequest, _: ((inout URLRequest) throws -> Void)?) throws -> URLRequest? {
-        guard let url = URL(string: request.fullPath) else {
+    func build(
+        _ request: NetworkLayerInterfaces.IRequest,
+        _ configure: ((inout URLRequest) throws -> Void)?
+    ) throws -> URLRequest? {
+        guard let fullPath = request.fullPath, let url = URL(string: fullPath) else {
             throw URLError(.badURL)
         }
 
@@ -44,6 +47,8 @@ final class RequestBuilder: IRequestBuilder {
         if let httpBody = request.httpBody {
             try requestBodyEncoder.encode(body: httpBody, to: &urlRequest)
         }
+
+        try configure?(&urlRequest)
 
         return urlRequest
     }

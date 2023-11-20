@@ -7,7 +7,8 @@ import Atomic
 import Foundation
 import NetworkLayerInterfaces
 
-/// <#Description#>
+/// A custom AuthenticatorInterceptor implementation that works with a specific type
+/// of Authenticator conforming to the IAuthenticator protocol.
 public final class AuthenticatorInterceptor<Authenticator: IAuthenticator>: IAuthenticatorInterceptor {
     // MARK: Types
 
