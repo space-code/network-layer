@@ -1,3 +1,5 @@
+![NetworkLayer: Network communication made easy](https://raw.githubusercontent.com/space-code/network-layer/dev/Resources/network-layer.png)
+
 <h1 align="center" style="margin-top: 0px;">network-layer</h1>
 
 <p align="center">
