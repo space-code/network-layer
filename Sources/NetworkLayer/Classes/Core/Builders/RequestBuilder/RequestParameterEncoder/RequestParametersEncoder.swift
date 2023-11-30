@@ -11,6 +11,10 @@ struct RequestParametersEncoder: IRequestParametersEncoder {
             throw URLError(.badURL)
         }
 
+        if parameters.isEmpty {
+            return
+        }
+
         let queries = parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
         var urlComponents = URLComponents(string: url.absoluteString)
 

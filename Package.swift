@@ -19,6 +19,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/space-code/atomic", .upToNextMajor(from: "1.0.0")),
         .package(url: "https://github.com/space-code/typhoon", .upToNextMajor(from: "1.0.0")),
+        .package(url: "https://github.com/WeTransfer/Mocker", .upToNextMajor(from: "3.0.1")),
     ],
     targets: [
         .target(
@@ -39,7 +40,11 @@ let package = Package(
             name: "NetworkLayerTests",
             dependencies: [
                 "NetworkLayer",
+                .product(name: "Mocker", package: "Mocker"),
                 .product(name: "Typhoon", package: "typhoon"),
+            ],
+            resources: [
+                .copy("Resources"),
             ]
         ),
     ]

@@ -63,7 +63,7 @@ final class RequestProcessorTests: XCTestCase {
     func test_thatRequestProcessorSignsRequest_whenRequestRequiresAuthentication() async {
         // given
         requestBuilderMock.stubbedBuildResult = URLRequest.fake()
-        dataRequestHandler.stubbedStartDataTask = .init(data: Data(), response: .init(), task: URLSessionTask())
+        dataRequestHandler.stubbedStartDataTask = .init(data: Data(), response: .init(), task: .fake())
 
         let request = RequestMock()
         request.stubbedRequiresAuthentication = true
@@ -81,7 +81,7 @@ final class RequestProcessorTests: XCTestCase {
     func test_thatRequestProcessorDoesNotSignRequest_whenRequestDoesNotRequireAuthentication() async {
         // given
         requestBuilderMock.stubbedBuildResult = URLRequest.fake()
-        dataRequestHandler.stubbedStartDataTask = .init(data: Data(), response: .init(), task: URLSessionTask())
+        dataRequestHandler.stubbedStartDataTask = .init(data: Data(), response: .init(), task: .fake())
 
         let request = RequestMock()
         request.stubbedRequiresAuthentication = false
@@ -99,7 +99,7 @@ final class RequestProcessorTests: XCTestCase {
     func test_thatRequestProcessorRefreshesCredential_whenCredentialIsNotValid() async {
         // given
         requestBuilderMock.stubbedBuildResult = URLRequest.fake()
-        dataRequestHandler.stubbedStartDataTask = .init(data: Data(), response: HTTPURLResponse(), task: URLSessionTask())
+        dataRequestHandler.stubbedStartDataTask = .init(data: Data(), response: HTTPURLResponse(), task: .fake())
         interceptorMock.stubbedIsRequireRefreshResult = true
 
         let request = RequestMock()

@@ -35,12 +35,12 @@ final class AuthenticationInterceptorTests: XCTestCase {
 
     func test_thatAuthenticatorInterceptorThrowsAnErrorOnAdaptRequest_whenCredentialIsMissing() async throws {
         // given
-        let requestMock = URLRequest.fake()
+        var requestMock = URLRequest.fake()
 
         // when
         var receivedError: NSError?
         do {
-            try await sut.adapt(request: requestMock, for: .shared)
+            try await sut.adapt(request: &requestMock, for: .shared)
         } catch {
             receivedError = error as NSError
         }
@@ -52,13 +52,13 @@ final class AuthenticationInterceptorTests: XCTestCase {
     func test_thatAuthenticatorInterceptorAdaptsRequest_whenCredentialIsNotMissingAndValid() async throws {
         // given
         let credentialStub = AuthenticationCredentialStub()
-        let requestMock = URLRequest.fake()
+        var requestMock = URLRequest.fake()
         credentialStub.stubbedRequiresRefresh = false
 
         sut.credential = credentialStub
 
         // when
-        try await sut.adapt(request: requestMock, for: .shared)
+        try await sut.adapt(request: &requestMock, for: .shared)
 
         // then
         XCTAssertEqual(authenticatorMock.invokedApplyCount, 1)
@@ -66,7 +66,7 @@ final class AuthenticationInterceptorTests: XCTestCase {
 
     func test_thatAuthenticatorInterceptorAdaptsRequest_whenCredentialIsNotMissingAndNotValid() async throws {
         // given
-        let requestMock = URLRequest.fake()
+        var requestMock = URLRequest.fake()
 
         let credentialStub = AuthenticationCredentialStub()
         credentialStub.stubbedRequiresRefresh = true
@@ -75,7 +75,7 @@ final class AuthenticationInterceptorTests: XCTestCase {
         sut.credential = credentialStub
 
         // when
-        try await sut.adapt(request: requestMock, for: .shared)
+        try await sut.adapt(request: &requestMock, for: .shared)
 
         // then
         XCTAssertEqual(authenticatorMock.invokedRefreshCount, 1)

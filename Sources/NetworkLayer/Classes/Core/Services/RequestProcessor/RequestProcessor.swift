@@ -51,6 +51,7 @@ actor RequestProcessor {
         self.retryPolicyService = retryPolicyService
         self.delegate = delegate
         self.interceptor = interceptor
+        self.dataRequestHandler.urlSessionDelegate = configuration.sessionDelegate
         session = URLSession(
             configuration: configuration.sessionConfiguration,
             delegate: dataRequestHandler,
@@ -76,11 +77,11 @@ actor RequestProcessor {
         delegate: URLSessionDelegate?,
         configure: ((inout URLRequest) throws -> Void)?
     ) async throws -> Response<Data> {
-        guard let urlRequest = try requestBuilder.build(request, configure) else {
+        guard var urlRequest = try requestBuilder.build(request, configure) else {
             throw NetworkLayerError.badURL
         }
 
-        try await adapt(request, urlRequest: urlRequest, session: session)
+        try await adapt(request, urlRequest: &urlRequest, session: session)
 
         return try await performRequest(strategy: strategy) {
             try await self.delegate?.requestProcessor(self, willSendRequest: urlRequest)
@@ -88,7 +89,7 @@ actor RequestProcessor {
             let task = session.dataTask(with: urlRequest)
 
             do {
-                let response = try await dataRequestHandler.startDataTask(task, session: session, delegate: delegate)
+                let response = try await dataRequestHandler.startDataTask(task, delegate: delegate)
 
                 if request.requiresAuthentication {
                     let isRefreshedCredential = try await refresh(
@@ -102,6 +103,8 @@ actor RequestProcessor {
                     }
                 }
 
+                try self.validate(response)
+
                 return response
             } catch {
                 throw error
@@ -109,11 +112,25 @@ actor RequestProcessor {
         }
     }
 
-    private func adapt<T: IRequest>(_ request: T, urlRequest: URLRequest, session: URLSession) async throws {
+    /// Adapts an initial request.
+    ///
+    /// - Parameters:
+    ///   - request: The request model.
+    ///   - urlRequest: The request that needs to be authenticated.
+    ///   - session: The URLSession for which the request is being refreshed.
+    private func adapt<T: IRequest>(_ request: T, urlRequest: inout URLRequest, session: URLSession) async throws {
         guard request.requiresAuthentication else { return }
-        try await interceptor?.adapt(request: urlRequest, for: session)
+        try await interceptor?.adapt(request: &urlRequest, for: session)
     }
 
+    /// Refreshes credential.
+    ///
+    /// - Parameters:
+    ///   - urlRequest: The request that needs to be authenticated.
+    ///   - response: The metadata associated with the response to an HTTP protocol URL load request.
+    ///   - session: The URLSession for which the request is being refreshed.
+    ///
+    /// - Returns: `true` if the request's token is refreshed, false otherwise.
     private func refresh<T>(
         urlRequest: URLRequest,
         response: Response<T>,
@@ -145,6 +162,11 @@ actor RequestProcessor {
         } catch {
             return try await retryPolicyService.retry(strategy: strategy, send)
         }
+    }
+
+    private func validate(_ response: Response<Data>) throws {
+        guard let urlResponse = response.response as? HTTPURLResponse else { return }
+        try delegate?.requestProcessor(self, validateResponse: urlResponse, data: response.data, task: response.task)
     }
 }
 

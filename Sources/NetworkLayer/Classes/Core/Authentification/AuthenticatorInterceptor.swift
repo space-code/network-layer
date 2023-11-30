@@ -28,7 +28,7 @@ public final class AuthenticatorInterceptor<Authenticator: IAuthenticator>: IAut
 
     // MARK: IAuthentificatorInterceptor
 
-    public func adapt(request: URLRequest, for session: URLSession) async throws {
+    public func adapt(request: inout URLRequest, for session: URLSession) async throws {
         guard let credential else {
             throw AuthenticatorInterceptorError.missingCredential
         }

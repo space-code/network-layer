@@ -12,7 +12,7 @@ final class AuthentificatorInterceptorMock: IAuthenticatorInterceptor {
     var invokedAdaptParameters: (request: URLRequest, session: URLSession)?
     var invokedAdaptParametersList = [(request: URLRequest, session: URLSession)]()
 
-    func adapt(request: URLRequest, for session: URLSession) {
+    func adapt(request: inout URLRequest, for session: URLSession) {
         invokedAdapt = true
         invokedAdaptCount += 1
         invokedAdaptParameters = (request, session)

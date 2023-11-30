@@ -12,7 +12,7 @@ public protocol IAuthenticatorInterceptor {
     /// - Parameters:
     ///   - request: The URLRequest to be adapted.
     ///   - session: The URLSession for which the request is being adapted.
-    func adapt(request: URLRequest, for session: URLSession) async throws
+    func adapt(request: inout URLRequest, for session: URLSession) async throws
 
     /// Refreshes credential for the request.
     ///

@@ -35,7 +35,6 @@ final class DataRequestHandler: NSObject {
 extension DataRequestHandler: IDataRequestHandler {
     func startDataTask(
         _ task: URLSessionDataTask,
-        session _: URLSession,
         delegate: URLSessionDelegate?
     ) async throws -> Response<Data> {
         try await withTaskCancellationHandler(operation: {
