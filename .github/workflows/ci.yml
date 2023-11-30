@@ -35,19 +35,19 @@ jobs:
         include:
           - destination: "OS=16.1,name=iPhone 14 Pro"
             name: "iOS"
-            scheme: "network-layer"
+            scheme: "NetworkLayer-Package"
             sdk: iphonesimulator
           - destination: "OS=16.1,name=Apple TV"
             name: "tvOS"
-            scheme: "network-layer"
+            scheme: "NetworkLayer-Package"
             sdk: appletvsimulator
           - destination: "OS=9.1,name=Apple Watch Series 8 (45mm)"
             name: "watchOS"
-            scheme: "network-layer"
+            scheme: "NetworkLayer-Package"
             sdk: watchsimulator
           - destination: "platform=macOS"
             name: "macOS"
-            scheme: "network-layer"
+            scheme: "NetworkLayer-Package"
             sdk: macosx
     steps:
       - uses: actions/checkout@v3
