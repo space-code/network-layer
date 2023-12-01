@@ -43,7 +43,7 @@ let package = Package(
                 .product(name: "Typhoon", package: "typhoon"),
             ],
             resources: [
-                .copy("Resources"),
+                .process("Resources"),
             ]
         ),
     ]

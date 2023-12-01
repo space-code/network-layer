@@ -6,5 +6,5 @@
 import Foundation
 
 public enum MockedData {
-    public static let userJSON: URL = Bundle.module.url(forResource: "Resources/JSONs/user", withExtension: "json")!
+    public static let userJSON: URL = Bundle.module.url(forResource: "user", withExtension: "json")!
 }
