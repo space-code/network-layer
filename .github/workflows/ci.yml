@@ -35,24 +35,24 @@ jobs:
         include:
           - destination: "OS=16.1,name=iPhone 14 Pro"
             name: "iOS"
-            scheme: "NetworkLayer-Package"
+            scheme: "NetworkLayer"
             sdk: iphonesimulator
           - destination: "OS=16.1,name=Apple TV"
             name: "tvOS"
-            scheme: "NetworkLayer-Package"
+            scheme: "NetworkLayer"
             sdk: appletvsimulator
           - destination: "OS=9.1,name=Apple Watch Series 8 (45mm)"
             name: "watchOS"
-            scheme: "NetworkLayer-Package"
+            scheme: "NetworkLayer"
             sdk: watchsimulator
           - destination: "platform=macOS"
             name: "macOS"
-            scheme: "NetworkLayer-Package"
+            scheme: "NetworkLayer"
             sdk: macosx
     steps:
       - uses: actions/checkout@v3
       - name: ${{ matrix.name }}
-        run: xcodebuild test -scheme "${{ matrix.scheme }}" -destination "${{ matrix.destination }}" clean -enableCodeCoverage YES -resultBundlePath "./${{ matrix.sdk }}.xcresult" | xcpretty -r junit
+        run: xcodebuild test -scheme "${{ matrix.scheme }}" -destination "${{ matrix.destination }}" clean -enableCodeCoverage YES -resultBundlePath "./${{ matrix.sdk }}.xcresult"
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3.1.0
         with:
