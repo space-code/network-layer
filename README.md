@@ -21,6 +21,7 @@
 - [Communication](#communication)
 - [Contributing](#contributing)
 - [Author](#author)
+- [Dependencies](#dependencies)
 - [License](#license)
 
 ## Usage
@@ -86,6 +87,13 @@ Please feel free to help out with this project! If you see something that could 
 
 ## Author
 Nikita Vasilev, nv3212@gmail.com
+
+## Dependencies
+This project uses several open-source packages:
+
+* [Atomic](https://github.com/space-code/atomic) is a Swift property wrapper designed to make values thread-safe.
+* [Typhoon](https://github.com/space-code/typhoon) is a service for retry policies.
+* [Mocker](https://github.com/WeTransfer/Mocker) is a library written in Swift which makes it possible to mock data requests using a custom `URLProtocol`.
 
 ## License
 network-layer is available under the MIT license. See the LICENSE file for more info.
