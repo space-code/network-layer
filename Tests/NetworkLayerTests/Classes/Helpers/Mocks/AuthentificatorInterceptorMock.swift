@@ -6,7 +6,7 @@
 import Foundation
 import NetworkLayerInterfaces
 
-final class AuthentificatorInterceptorMock: IAuthenticatorInterceptor {
+final class AuthentificatorInterceptorMock: IAuthenticationInterceptor {
     var invokedAdapt = false
     var invokedAdaptCount = 0
     var invokedAdaptParameters: (request: URLRequest, session: URLSession)?

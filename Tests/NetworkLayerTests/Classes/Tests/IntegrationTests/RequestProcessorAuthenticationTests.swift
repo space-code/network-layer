@@ -74,7 +74,7 @@ final class RequestProcessorAuthenicationTests: XCTestCase {
     // MARK: Private
 
     private func test_failAuthentication(adaptError: Error?, refreshError: Error?, expectedError: Error) async throws {
-        class FailInterceptor: IAuthenticatorInterceptor {
+        class FailInterceptor: IAuthenticationInterceptor {
             let adaptError: Error?
             let refreshError: Error?
 
@@ -125,7 +125,7 @@ final class RequestProcessorAuthenicationTests: XCTestCase {
 
 // MARK: - AuthInterceptor
 
-private final class AuthInterceptor: IAuthenticatorInterceptor {
+private final class AuthInterceptor: IAuthenticationInterceptor {
     var token: Token!
 
     private var attempts = 0

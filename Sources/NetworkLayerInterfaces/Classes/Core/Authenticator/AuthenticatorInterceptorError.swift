@@ -5,7 +5,7 @@
 
 import Foundation
 
-/// `AuthenticatorInterceptorError` is the error type returned by AuthenticatorInterceptor.
+/// `AuthenticatorInterceptorError` is the error type returned by AuthenticationInterceptor.
 public enum AuthenticatorInterceptorError: Swift.Error {
     /// The credential was not found.
     case missingCredential

@@ -24,7 +24,7 @@ actor RequestProcessor {
     /// The retry policy service.
     private let retryPolicyService: IRetryPolicyService
     /// The authenticator interceptor.
-    private let interceptor: IAuthenticatorInterceptor?
+    private let interceptor: IAuthenticationInterceptor?
     /// The delegate.
     private weak var delegate: RequestProcessorDelegate?
 
@@ -43,7 +43,7 @@ actor RequestProcessor {
         dataRequestHandler: any IDataRequestHandler,
         retryPolicyService: IRetryPolicyService,
         delegate: RequestProcessorDelegate?,
-        interceptor: IAuthenticatorInterceptor?
+        interceptor: IAuthenticationInterceptor?
     ) {
         self.configuration = configuration
         self.requestBuilder = requestBuilder

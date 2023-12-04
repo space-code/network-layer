@@ -17,18 +17,23 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
     /// The request processor delegate.
     private let delegate: RequestProcessorDelegate?
     /// The authenticator interceptor.
-    private let interceptor: IAuthenticatorInterceptor?
+    private let interceptor: IAuthenticationInterceptor?
     /// The json encoder.
     private let jsonEncoder: JSONEncoder
 
     // MARK: Initialization
 
     public init(
-        configure: Configuration,
-        retryPolicyStrategy: RetryPolicyStrategy?,
-        delegate: RequestProcessorDelegate?,
-        interceptor: IAuthenticatorInterceptor?,
-        jsonEncoder: JSONEncoder
+        configure: Configuration = .init(
+            sessionConfiguration: .default,
+            sessionDelegate: nil,
+            sessionDelegateQueue: nil,
+            jsonDecoder: JSONDecoder()
+        ),
+        retryPolicyStrategy: RetryPolicyStrategy? = nil,
+        delegate: RequestProcessorDelegate? = nil,
+        interceptor: IAuthenticationInterceptor? = nil,
+        jsonEncoder: JSONEncoder = JSONEncoder()
     ) {
         self.configure = configure
         self.retryPolicyStrategy = retryPolicyStrategy

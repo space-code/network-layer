@@ -22,7 +22,7 @@ public protocol INetworkLayerAssembly {
         configure: Configuration,
         retryPolicyStrategy: RetryPolicyStrategy?,
         delegate: RequestProcessorDelegate?,
-        interceptor: IAuthenticatorInterceptor?,
+        interceptor: IAuthenticationInterceptor?,
         jsonEncoder: JSONEncoder
     )
 

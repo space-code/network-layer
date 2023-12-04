@@ -12,14 +12,14 @@ final class AuthenticationInterceptorTests: XCTestCase {
 
     private var authenticatorMock: AuthenticatorMock!
 
-    private var sut: AuthenticatorInterceptor<AuthenticatorMock>!
+    private var sut: AuthenticationInterceptor<AuthenticatorMock>!
 
     // MARK: XCTestCase
 
     override func setUp() {
         super.setUp()
         authenticatorMock = AuthenticatorMock()
-        sut = AuthenticatorInterceptor(
+        sut = AuthenticationInterceptor(
             authenticator: authenticatorMock,
             credential: nil
         )

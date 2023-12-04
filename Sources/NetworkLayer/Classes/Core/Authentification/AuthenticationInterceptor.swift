@@ -7,9 +7,9 @@ import Atomic
 import Foundation
 import NetworkLayerInterfaces
 
-/// A custom AuthenticatorInterceptor implementation that works with a specific type
+/// A custom AuthenticationInterceptor implementation that works with a specific type
 /// of Authenticator conforming to the IAuthenticator protocol.
-public final class AuthenticatorInterceptor<Authenticator: IAuthenticator>: IAuthenticatorInterceptor {
+public final class AuthenticationInterceptor<Authenticator: IAuthenticator>: IAuthenticationInterceptor {
     // MARK: Types
 
     public typealias Credential = Authenticator.Credential
@@ -21,6 +21,11 @@ public final class AuthenticatorInterceptor<Authenticator: IAuthenticator>: IAut
 
     // MARK: Initialization
 
+    /// Creates a new instance of `AuthenticationInterceptor`.
+    ///
+    /// - Parameters:
+    ///   - authenticator: The authenticator.
+    ///   - credential: The credential.
     public init(authenticator: Authenticator, credential: Credential? = nil) {
         self.authenticator = authenticator
         self.credential = credential
@@ -28,6 +33,11 @@ public final class AuthenticatorInterceptor<Authenticator: IAuthenticator>: IAut
 
     // MARK: IAuthentificatorInterceptor
 
+    /// Adapts the request with credentials.
+    ///
+    /// - Parameters:
+    ///   - request: The URLRequest to be adapted.
+    ///   - session: The URLSession for which the request is being adapted.
     public func adapt(request: inout URLRequest, for session: URLSession) async throws {
         guard let credential else {
             throw AuthenticatorInterceptorError.missingCredential
@@ -40,6 +50,11 @@ public final class AuthenticatorInterceptor<Authenticator: IAuthenticator>: IAut
         }
     }
 
+    /// Refreshes credential for the request.
+    ///
+    /// - Parameters:
+    ///   - request: The URLRequest to be refreshed.
+    ///   - session: The URLSession for which the request is being refreshed.
     public func refresh(
         _ request: URLRequest,
         with response: HTTPURLResponse,
@@ -60,6 +75,13 @@ public final class AuthenticatorInterceptor<Authenticator: IAuthenticator>: IAut
         try await refresh(credential, for: session)
     }
 
+    /// Determines whether a request requires a credential refresh.
+    ///
+    /// - Parameters:
+    ///   - request: The URLRequest to check.
+    ///   - response: The HTTPURLResponse received for the request.
+    ///
+    /// - Returns: A boolean indicating whether a credential refresh is required.
     public func isRequireRefresh(_ request: URLRequest, response: HTTPURLResponse) -> Bool {
         authenticator.didRequest(request, with: response)
     }

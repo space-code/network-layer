@@ -12,7 +12,7 @@ import Typhoon
 extension RequestProcessor {
     static func mock(
         requestProcessorDelegate: RequestProcessorDelegate? = nil,
-        interceptor: IAuthenticatorInterceptor? = nil
+        interceptor: IAuthenticationInterceptor? = nil
     ) -> RequestProcessor {
         RequestProcessor(
             configuration: .init(
