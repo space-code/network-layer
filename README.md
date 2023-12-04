@@ -12,9 +12,10 @@
 </p>
 
 ## Description
-`network-layer` description.
+`network-layer` is a library for network communication.
 
 - [Usage](#usage)
+- [Documentation](#documentation)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Communication](#communication)
@@ -24,7 +25,37 @@
 
 ## Usage
 
+```swift
+import NetworkLayer
+import NetworkLayerInterfaces
+
+struct Request: IRequest {
+    var domainName: String { 
+        "https://example.com"
+    }
+
+    var path: String { 
+        "user"
+    }
+
+    var httpMethod: HTTPMethod { 
+        .get
+    }
+}
+
+let request = Request()
+let requestProcessor = NetworkLayerAssembly().assemble()
+let user: User = try await requestProcessor.send(request)
+```
+
+## Documentation
+
+Check out [network-layer documentation](https://github.com/space-code/network-layer/blob/main/Sources/NetworkLayer/NetworkLayer.docc/NetworkLayer.md).
+
 ## Requirements
+- iOS 13.0+ / macOS 10.15+ / tvOS 13.0+ / watchOS 7.0+ / visionOS 1.0+
+- Xcode 14.0
+- Swift 5.7
 
 ## Installation
 ### Swift Package Manager
