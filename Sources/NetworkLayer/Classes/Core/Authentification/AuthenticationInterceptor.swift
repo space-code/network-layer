@@ -46,7 +46,7 @@ public final class AuthenticationInterceptor<Authenticator: IAuthenticator>: IAu
         if credential.requiresRefresh {
             try await refresh(credential, for: session)
         } else {
-            try await authenticator.apply(credential, to: request)
+            try await authenticator.apply(credential, to: &request)
         }
     }
 
