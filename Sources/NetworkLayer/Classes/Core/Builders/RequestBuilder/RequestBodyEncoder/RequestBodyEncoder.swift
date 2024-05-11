@@ -25,7 +25,7 @@ struct RequestBodyEncoder: IRequestBodyEncoder {
             request.httpBody = data
         case let .encodable(encodable):
             request.httpBody = try jsonEncoder.encode(encodable)
-        case let .dictonary(dictionary):
+        case let .dictionary(dictionary):
             request.httpBody = try JSONSerialization.data(withJSONObject: dictionary)
         }
     }

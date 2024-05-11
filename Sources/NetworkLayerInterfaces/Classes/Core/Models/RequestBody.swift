@@ -8,5 +8,5 @@ import Foundation
 public enum RequestBody {
     case data(Data)
     case encodable(Encodable)
-    case dictonary([String: Any])
+    case dictionary([String: Any])
 }

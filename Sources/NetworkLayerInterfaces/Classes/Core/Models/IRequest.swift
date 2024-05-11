@@ -30,7 +30,7 @@ public protocol IRequest {
     /// The HTTP method.
     var httpMethod: HTTPMethod { get }
 
-    /// A dictonary that contains the request's body.
+    /// A dictionary that contains the request's body.
     var httpBody: RequestBody? { get }
 
     /// An alias for the cache policy.
@@ -58,7 +58,7 @@ public extension IRequest {
         60
     }
 
-    /// A dictonary that contains the request's body.
+    /// A dictionary that contains the request's body.
     var httpBody: RequestBody? {
         nil
     }
