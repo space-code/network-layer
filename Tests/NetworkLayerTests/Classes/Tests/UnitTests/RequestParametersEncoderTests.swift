@@ -41,7 +41,8 @@ final class RequestParametersEncoderTests: XCTestCase {
 
     func test_thatRequestParametersEncoderThrowsAnError_whenURLIsNotValid() {
         // given
-        var requestMock = URLRequest.fake(string: .wrongURL)
+        var requestMock = URLRequest.fake(string: .domainName)
+        requestMock.url = nil
 
         // when
         var receivedError: NSError?
@@ -60,7 +61,6 @@ final class RequestParametersEncoderTests: XCTestCase {
 
 private extension String {
     static let domainName = "https://google.com"
-    static let wrongURL = "http://example.com:-80"
 }
 
 private extension Dictionary where Self.Key == String, Self.Value == String {

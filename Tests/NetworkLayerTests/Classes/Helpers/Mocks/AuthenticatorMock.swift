@@ -14,7 +14,7 @@ final class AuthenticatorMock: IAuthenticator {
     var invokedApplyParameters: (credential: Credential, urlRequest: URLRequest)?
     var invokedApplyParametersList = [(credential: Credential, urlRequest: URLRequest)]()
 
-    func apply(_ credential: Credential, to urlRequest: URLRequest) async throws {
+    func apply(_ credential: Credential, to urlRequest: inout URLRequest) async throws {
         invokedApply = true
         invokedApplyCount += 1
         invokedApplyParameters = (credential, urlRequest)
