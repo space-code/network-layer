@@ -13,10 +13,10 @@ import NetworkLayerInterfaces
 final class DataRequestHandler: NSObject {
     // MARK: Properties
 
-    private typealias HandlerDictonary = [URLSessionTask: DataTaskHandler]
+    private typealias HandlerDictionary = [URLSessionTask: DataTaskHandler]
 
-    /// The dictonary that stores handlers.
-    @Atomic private var handlers: HandlerDictonary = [:]
+    /// The dictionary that stores handlers.
+    @Atomic private var handlers: HandlerDictionary = [:]
     /// A protocol that defines methods that URL session instances call on their
     /// delegates to handle task-level events specific to data and upload tasks.
     private var userDataDelegate: URLSessionDataDelegate?
