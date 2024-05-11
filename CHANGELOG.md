@@ -7,6 +7,10 @@ All notable changes to this project will be documented in this file.
 - Fix the `inout` parameter in the `IAuthenticator` protocol
   - Fixed in Pull Request [#2](https://github.com/space-code/network-layer/pull/2).
 
+## Updated
+- Update the Github Workflow
+  - Updated in Pull Request [#3](https://github.com/space-code/network-layer/pull/3).
+
 #### 1.x Releases
 - `1.0.x` Releases - [1.0.0](#100)
 
