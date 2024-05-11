@@ -34,8 +34,8 @@ struct Authenticator: IAuthenticator {
     /// - Parameters:
     ///   - credential: The `Credential`.
     ///   - urlRequest: The `URLRequest`.
-    func apply(_ credential: Credential, to urlRequest: URLRequest) async throws {
-        request.addValue("Bearer <token>", forHTTPHeaderField: "Authorization")
+    func apply(_ credential: Credential, to urlRequest: inout URLRequest) async throws {
+        urlRequest.addValue("Bearer <token>", forHTTPHeaderField: "Authorization")
     }
 
     /// Refreshes the `Credential`.

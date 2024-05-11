@@ -14,7 +14,7 @@ public protocol IAuthenticator {
     /// - Parameters:
     ///   - credential: The `Credential`.
     ///   - urlRequest: The `URLRequest`.
-    func apply(_ credential: Credential, to urlRequest: URLRequest) async throws
+    func apply(_ credential: Credential, to urlRequest: inout URLRequest) async throws
 
     /// Refreshes the `Credential`.
     ///
