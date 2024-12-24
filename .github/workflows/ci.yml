@@ -214,7 +214,7 @@ jobs:
 
   discover-typos:
     name: Discover Typos
-    runs-on: macOS-12
+    runs-on: macOS-13
     env:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
