@@ -3,7 +3,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## Fixed
+#### Added
+- Bump the Swift version to 6.0.
+  - Added in Pull Request [#3](https://github.com/space-code/network-layer/pull/3).
+
+#### Fixed
 - Fix the `inout` parameter in the `IAuthenticator` protocol
   - Fixed in Pull Request [#2](https://github.com/space-code/network-layer/pull/2).
 

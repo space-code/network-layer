@@ -26,7 +26,7 @@ actor RequestProcessor {
     /// The authenticator interceptor.
     private let interceptor: IAuthenticationInterceptor?
     /// The delegate.
-    private weak var delegate: RequestProcessorDelegate?
+    private var delegate: SafeRequestProcessorDelegate?
 
     // MARK: Initialization
 
@@ -42,7 +42,7 @@ actor RequestProcessor {
         requestBuilder: IRequestBuilder,
         dataRequestHandler: any IDataRequestHandler,
         retryPolicyService: IRetryPolicyService,
-        delegate: RequestProcessorDelegate?,
+        delegate: SafeRequestProcessorDelegate?,
         interceptor: IAuthenticationInterceptor?
     ) {
         self.configuration = configuration
@@ -83,8 +83,8 @@ actor RequestProcessor {
 
         try await adapt(request, urlRequest: &urlRequest, session: session)
 
-        return try await performRequest(strategy: strategy) {
-            try await self.delegate?.requestProcessor(self, willSendRequest: urlRequest)
+        return try await performRequest(strategy: strategy) { [urlRequest] in
+            try await self.delegate?.wrappedValue?.requestProcessor(self, willSendRequest: urlRequest)
 
             let task = session.dataTask(with: urlRequest)
 
@@ -103,7 +103,7 @@ actor RequestProcessor {
                     }
                 }
 
-                try self.validate(response)
+                try await self.validate(response)
 
                 return response
             } catch {
@@ -153,9 +153,9 @@ actor RequestProcessor {
     ///   - send: The closure that sends the request.
     ///
     /// - Returns: The response from the network request.
-    private func performRequest<T>(
+    private func performRequest<T: Sendable>(
         strategy: RetryPolicyStrategy? = nil,
-        _ send: () async throws -> T
+        _ send: @Sendable () async throws -> T
     ) async throws -> T {
         do {
             return try await send()
@@ -166,18 +166,23 @@ actor RequestProcessor {
 
     private func validate(_ response: Response<Data>) throws {
         guard let urlResponse = response.response as? HTTPURLResponse else { return }
-        try delegate?.requestProcessor(self, validateResponse: urlResponse, data: response.data, task: response.task)
+        try delegate?.wrappedValue?.requestProcessor(
+            self,
+            validateResponse: urlResponse,
+            data: response.data,
+            task: response.task
+        )
     }
 }
 
 // MARK: IRequestProcessor
 
 extension RequestProcessor: IRequestProcessor {
-    func send<T: IRequest, M: Decodable>(
+    func send<T: IRequest, M: Decodable & Sendable>(
         _ request: T,
         strategy: RetryPolicyStrategy? = nil,
         delegate: URLSessionDelegate? = nil,
-        configure: ((inout URLRequest) throws -> Void)? = nil
+        configure: (@Sendable (inout URLRequest) throws -> Void)? = nil
     ) async throws -> Response<M> {
         let response = try await performRequest(request, strategy: strategy, delegate: delegate, configure: configure)
         return try response.map { data in try self.configuration.jsonDecoder.decode(M.self, from: data) }

@@ -46,12 +46,35 @@ final class RequestProcessorRequestTests: XCTestCase {
         }
     }
 
+    func test_thatRequestProcessorConfigureARequest() async throws {
+        // given
+        DynamicStubs.register(stubs: [.updateProfile])
+
+        let endpointURL = URL(string: "\(String.domain)/\(String.updateProfile)")
+        let delegateMock = RequestProcessorDelegateMock()
+
+        let sut = RequestProcessor.mock(requestProcessorDelegate: delegateMock)
+        let request = makeRequest(.user)
+
+        // when
+        let user: Response<User> = try await sut.send(request) { urlRequest in
+            urlRequest.url = endpointURL
+        }
+
+        // then
+        XCTAssertEqual(user.data.id, 1)
+        XCTAssertNotNil(user.data.avatarUrl)
+        XCTAssertEqual(delegateMock.invokedRequestProcessorParameters?.request.httpMethod, HTTPMethod.get.rawValue)
+        XCTAssertEqual(delegateMock.invokedRequestProcessorParameters?.request.url, endpointURL)
+    }
+
     // MARK: Private
 
     private func makeRequest(_ path: String) -> IRequest {
         let request = RequestStub()
-        request.stubbedDomainName = "https://github.com"
+        request.stubbedDomainName = .domain
         request.stubbedPath = path
+//        request.httpMethod = .get
         return request
     }
 }
@@ -75,8 +98,11 @@ private final class GitHubDelegate: RequestProcessorDelegate {
 
 private extension StubResponse {
     static let user = StubResponse(name: .user, fileURL: MockedData.userJSON, httpMethod: .get)
+    static let updateProfile = StubResponse(name: .updateProfile, fileURL: MockedData.userJSON, httpMethod: .get)
 }
 
 private extension String {
     static let user = "user"
+    static let updateProfile = "updateProfile"
+    static let domain = "https://github.com"
 }

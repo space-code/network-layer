@@ -6,7 +6,7 @@
 import Foundation
 import NetworkLayerInterfaces
 
-final class RequestBuilder: IRequestBuilder {
+final class RequestBuilder: IRequestBuilder, @unchecked Sendable {
     // MARK: Properties
 
     private let parametersEncoder: IRequestParametersEncoder

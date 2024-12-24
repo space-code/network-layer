@@ -6,7 +6,7 @@
 import Foundation
 import Mocker
 
-struct StubResponse {
+struct StubResponse: @unchecked Sendable {
     let name: String
     let fileURL: URL
     let httpMethod: Mock.HTTPMethod

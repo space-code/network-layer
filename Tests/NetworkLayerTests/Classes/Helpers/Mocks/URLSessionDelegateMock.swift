@@ -5,7 +5,7 @@
 
 import Foundation
 
-final class URLSessionDelegateMock: NSObject, URLSessionDataDelegate {
+final class URLSessionDelegateMock: NSObject, URLSessionDataDelegate, @unchecked Sendable {
     var invokedUrlSessionDidBecomeInvalidWithError = false
     var invokedUrlSessionDidBecomeInvalidWithErrorCount = 0
     var invokedUrlSessionDidBecomeInvalidWithErrorParameters: (session: URLSession, error: Error?)?

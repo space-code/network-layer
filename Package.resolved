@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/space-code/atomic",
       "state" : {
-        "revision" : "53fae2fc8216bb5c27c87b245f893176d0d290eb",
-        "version" : "1.0.0"
+        "revision" : "6304c805e9d97fe1239bcde561234d857164cb10",
+        "version" : "1.1.0"
       }
     },
     {
@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/space-code/typhoon",
       "state" : {
-        "revision" : "c0e2970812f4ec837fc61afd72a7ca1f0aa39306",
-        "version" : "1.0.0"
+        "revision" : "5865671564c5b443a9a28d2f1dbb69bccbb5931c",
+        "version" : "1.2.1"
       }
     }
   ],

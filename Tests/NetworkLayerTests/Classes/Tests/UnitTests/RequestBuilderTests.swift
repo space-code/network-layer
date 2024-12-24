@@ -59,7 +59,7 @@ final class RequestBuilderTests: XCTestCase {
         requestStub.stubbedDomainName = .domainName
         requestStub.stubbedHeaders = .contentType
         requestStub.stubbedHttpMethod = .post
-        requestStub.stubbedHttpBody = .dictonary(.item)
+        requestStub.stubbedHttpBody = .dictionary(.item)
         requestStub.stubbedParameters = .contentType
 
         // when
@@ -72,7 +72,7 @@ final class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(request?.httpMethod, "POST")
         XCTAssertEqual(parametersEncoderMock.invokedEncodeParameters?.parameters, .contentType)
 
-        if case let .dictonary(dict) = requestBodyEncoderMock.invokedEncodeParameters?.body {
+        if case let .dictionary(dict) = requestBodyEncoderMock.invokedEncodeParameters?.body {
             XCTAssertTrue(NSDictionary(dictionary: dict).isEqual(to: Dictionary.item))
         } else {
             XCTFail("body should be equal to a dictionary")

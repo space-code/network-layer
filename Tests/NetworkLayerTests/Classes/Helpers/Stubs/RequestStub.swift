@@ -6,7 +6,7 @@
 import Foundation
 import NetworkLayerInterfaces
 
-final class RequestStub: IRequest {
+final class RequestStub: IRequest, @unchecked Sendable {
     var stubbedDomainName: String! = ""
 
     var domainName: String {
@@ -49,7 +49,7 @@ final class RequestStub: IRequest {
         stubbedHttpMethod
     }
 
-    var stubbedHttpBody: RequestBody? = nil
+    var stubbedHttpBody: RequestBody?
 
     var httpBody: RequestBody? {
         stubbedHttpBody
