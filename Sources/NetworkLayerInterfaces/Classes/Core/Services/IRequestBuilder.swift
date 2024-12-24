@@ -6,7 +6,7 @@
 import Foundation
 
 /// A type that creates a `URLRequest`.
-public protocol IRequestBuilder {
+public protocol IRequestBuilder: Sendable {
     /// Creates a new `URLRequest` using `IRequest.`
     ///
     /// - Parameter request: The request object that defines the request details.

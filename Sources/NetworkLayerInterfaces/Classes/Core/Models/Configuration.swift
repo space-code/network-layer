@@ -6,7 +6,7 @@
 import Foundation
 
 /// A type that represents a configuration for the network layer.
-public struct Configuration {
+public struct Configuration: @unchecked Sendable {
     // MARK: Properties
 
     /// A configuration object that defines behavior and policies for a URL session.

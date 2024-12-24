@@ -22,7 +22,7 @@ public protocol IRequestProcessor {
         _ request: T,
         strategy: RetryPolicyStrategy?,
         delegate: URLSessionDelegate?,
-        configure: ((inout URLRequest) throws -> Void)?
+        configure: (@Sendable (inout URLRequest) throws -> Void)?
     ) async throws -> Response<M>
 }
 

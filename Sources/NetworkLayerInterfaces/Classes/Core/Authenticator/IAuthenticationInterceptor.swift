@@ -6,7 +6,7 @@
 import Foundation
 
 /// A type defines the authenticator interceptor interface.
-public protocol IAuthenticationInterceptor {
+public protocol IAuthenticationInterceptor: Sendable {
     /// Adapts the request with credentials.
     ///
     /// - Parameters:

@@ -15,7 +15,7 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
     /// The retry policy service.
     private let retryPolicyStrategy: RetryPolicyStrategy?
     /// The request processor delegate.
-    private let delegate: RequestProcessorDelegate?
+    private var delegate: SafeRequestProcessorDelegate?
     /// The authenticator interceptor.
     private let interceptor: IAuthenticationInterceptor?
     /// The json encoder.
@@ -37,7 +37,7 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
     ) {
         self.configure = configure
         self.retryPolicyStrategy = retryPolicyStrategy
-        self.delegate = delegate
+        self.delegate = SafeRequestProcessorDelegate(delegate: delegate)
         self.interceptor = interceptor
         self.jsonEncoder = jsonEncoder
     }

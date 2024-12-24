@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2023 Space Code. All rights reserved.
+// Copyright © 2024 Space Code. All rights reserved.
 //
 
 import Foundation
@@ -8,7 +8,7 @@ import Foundation
 // MARK: - IRequest
 
 /// A type to which all requests must conform.
-public protocol IRequest {
+public protocol IRequest: Sendable {
     /// The base `URL` for the resource.
     var domainName: String { get }
 

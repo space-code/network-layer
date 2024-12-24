@@ -6,7 +6,7 @@
 import Foundation
 import NetworkLayerInterfaces
 
-final class RequestBuilderMock: IRequestBuilder {
+final class RequestBuilderMock: IRequestBuilder, @unchecked Sendable {
     var invokedBuild = false
     var invokedBuildCount = 0
     var invokedBuildParameters: (request: IRequest, Void)?

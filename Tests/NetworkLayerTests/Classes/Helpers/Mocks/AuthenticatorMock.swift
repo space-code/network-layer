@@ -1,12 +1,12 @@
 //
 // network-layer
-// Copyright © 2023 Space Code. All rights reserved.
+// Copyright © 2024 Space Code. All rights reserved.
 //
 
 import Foundation
 import NetworkLayerInterfaces
 
-final class AuthenticatorMock: IAuthenticator {
+final class AuthenticatorMock: IAuthenticator, @unchecked Sendable {
     typealias Credential = AuthenticationCredentialStub
 
     var invokedApply = false

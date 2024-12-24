@@ -6,7 +6,7 @@
 import Foundation
 import NetworkLayerInterfaces
 
-final class RequestMock: IRequest {
+final class RequestMock: IRequest, @unchecked Sendable {
     var invokedDomainNameGetter = false
     var invokedDomainNameGetterCount = 0
     var stubbedDomainName: String! = ""

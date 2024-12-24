@@ -6,7 +6,7 @@
 import Foundation
 
 /// A type defines an authentication credential interface.
-public protocol IAuthenticationCredential {
+public protocol IAuthenticationCredential: Sendable {
     /// Determines whether the authentication credential requires a refresh.
     var requiresRefresh: Bool { get }
 }

@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2023 Space Code. All rights reserved.
+// Copyright © 2024 Space Code. All rights reserved.
 //
 
 import Atomic
@@ -10,7 +10,7 @@ import NetworkLayerInterfaces
 // MARK: - DataRequestHandler
 
 /// Manages data request handlers for URLSessionTasks.
-final class DataRequestHandler: NSObject {
+final class DataRequestHandler: NSObject, @unchecked Sendable {
     // MARK: Properties
 
     private typealias HandlerDictionary = [URLSessionTask: DataTaskHandler]
@@ -40,7 +40,7 @@ extension DataRequestHandler: IDataRequestHandler {
         try await withTaskCancellationHandler(operation: {
             try await withUnsafeThrowingContinuation { continuation in
                 let dataTaskHandler = DataTaskHandler(delegate: delegate)
-                dataTaskHandler.completion = continuation.resume(with:)
+                dataTaskHandler.completion = { continuation.resume(with: $0) }
                 handlers[task] = dataTaskHandler
                 task.resume()
             }
@@ -71,15 +71,14 @@ extension DataRequestHandler {
         _ session: URLSession,
         dataTask: URLSessionDataTask,
         willCacheResponse proposedResponse: CachedURLResponse,
-        completionHandler: @escaping (CachedURLResponse?) -> Void
+        completionHandler: @escaping @Sendable (CachedURLResponse?) -> Void
     ) {
         userDataDelegate?.urlSession?(
             session,
             dataTask: dataTask,
             willCacheResponse: proposedResponse,
             completionHandler: completionHandler
-        )
-        completionHandler(proposedResponse)
+        ) ?? completionHandler(proposedResponse)
     }
 }
 
@@ -114,7 +113,7 @@ extension DataRequestHandler {
         task: URLSessionTask,
         willPerformHTTPRedirection response: HTTPURLResponse,
         newRequest request: URLRequest,
-        completionHandler: @escaping (URLRequest?) -> Void
+        completionHandler: @escaping @Sendable (URLRequest?) -> Void
     ) {
         userDataDelegate?.urlSession?(
             session,
@@ -122,8 +121,7 @@ extension DataRequestHandler {
             willPerformHTTPRedirection: response,
             newRequest: request,
             completionHandler: completionHandler
-        )
-        completionHandler(request)
+        ) ?? completionHandler(request)
     }
 
     func urlSession(_ session: URLSession, taskIsWaitingForConnectivity task: URLSessionTask) {
@@ -133,9 +131,13 @@ extension DataRequestHandler {
     func urlSession(
         _ session: URLSession,
         didReceive challenge: URLAuthenticationChallenge,
-        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        completionHandler: @escaping @Sendable (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
-        userDataDelegate?.urlSession?(session, didReceive: challenge, completionHandler: completionHandler)
+        userDataDelegate?.urlSession?(
+            session,
+            didReceive: challenge,
+            completionHandler: completionHandler
+        )
         completionHandler(.performDefaultHandling, nil)
     }
 
@@ -143,9 +145,14 @@ extension DataRequestHandler {
         _ session: URLSession,
         task: URLSessionTask,
         willBeginDelayedRequest request: URLRequest,
-        completionHandler: @escaping (URLSession.DelayedRequestDisposition, URLRequest?) -> Void
+        completionHandler: @escaping @Sendable (URLSession.DelayedRequestDisposition, URLRequest?) -> Void
     ) {
-        userDataDelegate?.urlSession?(session, task: task, willBeginDelayedRequest: request, completionHandler: completionHandler)
+        userDataDelegate?.urlSession?(
+            session,
+            task: task,
+            willBeginDelayedRequest: request,
+            completionHandler: completionHandler
+        )
         completionHandler(.continueLoading, nil)
     }
 
