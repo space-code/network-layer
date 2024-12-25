@@ -15,6 +15,8 @@ Released on 2024-12-25.
 #### Fixed
 - Fix the `inout` parameter in the `IAuthenticator` protocol
   - Fixed in Pull Request [#2](https://github.com/space-code/network-layer/pull/2).
+- Fix the package builiding.
+  - Fixed in Pull Request [#6](https://github.com/space-code/network-layer/pull-6).
 
 ## [1.0.0](https://github.com/space-code/network-layer/releases/tag/1.0.0)
 Released on 2023-12-04.
