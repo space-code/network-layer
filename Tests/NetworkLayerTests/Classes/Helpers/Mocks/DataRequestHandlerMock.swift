@@ -6,7 +6,7 @@
 import Foundation
 import NetworkLayerInterfaces
 
-final class DataRequestHandlerMock: NSObject, IDataRequestHandler {
+final class DataRequestHandlerMock: NSObject, IDataRequestHandler, @unchecked Sendable {
     var invokedUrlSessionGetDelegate = false
     var invokedUrlSessionGetDelegateCount = 0
     var invokedUrlSessionSetDelegate = false

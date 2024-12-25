@@ -1,12 +1,12 @@
 //
 // network-layer
-// Copyright © 2023 Space Code. All rights reserved.
+// Copyright © 2024 Space Code. All rights reserved.
 //
 
 import Foundation
 import NetworkLayerInterfaces
 
-final class AuthenticatorMock: IAuthenticator {
+final class AuthenticatorMock: IAuthenticator, @unchecked Sendable {
     typealias Credential = AuthenticationCredentialStub
 
     var invokedApply = false
@@ -14,7 +14,7 @@ final class AuthenticatorMock: IAuthenticator {
     var invokedApplyParameters: (credential: Credential, urlRequest: URLRequest)?
     var invokedApplyParametersList = [(credential: Credential, urlRequest: URLRequest)]()
 
-    func apply(_ credential: Credential, to urlRequest: URLRequest) async throws {
+    func apply(_ credential: Credential, to urlRequest: inout URLRequest) async throws {
         invokedApply = true
         invokedApplyCount += 1
         invokedApplyParameters = (credential, urlRequest)

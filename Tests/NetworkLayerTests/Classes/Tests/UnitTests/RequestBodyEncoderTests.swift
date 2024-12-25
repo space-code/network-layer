@@ -39,16 +39,16 @@ final class RequestBodyEncoderTests: XCTestCase {
         XCTAssertEqual(requestFake.httpBody, data)
     }
 
-    func test_thatRequestBodyEncoderEncodesBodyIntoRequest_whenTypeIsDictonary() throws {
+    func test_thatRequestBodyEncoderEncodesBodyIntoRequest_whenTypeIsDictionary() throws {
         // given
         var requestFake = URLRequest.fake()
-        let dictonary = ["test": "test"]
+        let dictionary = ["test": "test"]
 
         // when
-        try sut.encode(body: .dictonary(dictonary), to: &requestFake)
+        try sut.encode(body: .dictionary(dictionary), to: &requestFake)
 
         // then
-        let data = try JSONSerialization.data(withJSONObject: dictonary)
+        let data = try JSONSerialization.data(withJSONObject: dictionary)
         XCTAssertEqual(requestFake.httpBody, data)
     }
 

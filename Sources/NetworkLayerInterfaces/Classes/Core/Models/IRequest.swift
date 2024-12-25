@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2023 Space Code. All rights reserved.
+// Copyright © 2024 Space Code. All rights reserved.
 //
 
 import Foundation
@@ -8,7 +8,7 @@ import Foundation
 // MARK: - IRequest
 
 /// A type to which all requests must conform.
-public protocol IRequest {
+public protocol IRequest: Sendable {
     /// The base `URL` for the resource.
     var domainName: String { get }
 
@@ -30,7 +30,7 @@ public protocol IRequest {
     /// The HTTP method.
     var httpMethod: HTTPMethod { get }
 
-    /// A dictonary that contains the request's body.
+    /// A dictionary that contains the request's body.
     var httpBody: RequestBody? { get }
 
     /// An alias for the cache policy.
@@ -58,7 +58,7 @@ public extension IRequest {
         60
     }
 
-    /// A dictonary that contains the request's body.
+    /// A dictionary that contains the request's body.
     var httpBody: RequestBody? {
         nil
     }

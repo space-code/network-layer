@@ -6,7 +6,7 @@
 import Foundation
 import NetworkLayerInterfaces
 
-final class AuthenticationCredentialStub: IAuthenticationCredential {
+final class AuthenticationCredentialStub: IAuthenticationCredential, @unchecked Sendable {
     var stubbedRequiresRefresh: Bool! = false
 
     var requiresRefresh: Bool {

@@ -5,6 +5,8 @@
 
 import Foundation
 
+// MARK: - Response
+
 /// A generic struct representing an HTTP response.
 public struct Response<T> {
     /// The data associated with the response.
@@ -32,3 +34,7 @@ public struct Response<T> {
         self.task = task
     }
 }
+
+// MARK: Sendable
+
+extension Response: @unchecked Sendable where T: Sendable {}

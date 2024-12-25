@@ -1,12 +1,12 @@
 //
 // network-layer
-// Copyright © 2023 Space Code. All rights reserved.
+// Copyright © 2024 Space Code. All rights reserved.
 //
 
 import Foundation
 
 /// A protocol defining the interface for an authenticator type.
-public protocol IAuthenticator {
+public protocol IAuthenticator: Sendable {
     associatedtype Credential: IAuthenticationCredential
 
     /// Applies the `Credential` to the `URLRequest`.
@@ -14,7 +14,7 @@ public protocol IAuthenticator {
     /// - Parameters:
     ///   - credential: The `Credential`.
     ///   - urlRequest: The `URLRequest`.
-    func apply(_ credential: Credential, to urlRequest: URLRequest) async throws
+    func apply(_ credential: Credential, to urlRequest: inout URLRequest) async throws
 
     /// Refreshes the `Credential`.
     ///

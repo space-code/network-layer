@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2023 Space Code. All rights reserved.
+// Copyright © 2024 Space Code. All rights reserved.
 //
 
 import Atomic
@@ -9,7 +9,7 @@ import NetworkLayerInterfaces
 
 /// A custom AuthenticationInterceptor implementation that works with a specific type
 /// of Authenticator conforming to the IAuthenticator protocol.
-public final class AuthenticationInterceptor<Authenticator: IAuthenticator>: IAuthenticationInterceptor {
+public final class AuthenticationInterceptor<Authenticator: IAuthenticator>: IAuthenticationInterceptor, @unchecked Sendable {
     // MARK: Types
 
     public typealias Credential = Authenticator.Credential
@@ -46,7 +46,7 @@ public final class AuthenticationInterceptor<Authenticator: IAuthenticator>: IAu
         if credential.requiresRefresh {
             try await refresh(credential, for: session)
         } else {
-            try await authenticator.apply(credential, to: request)
+            try await authenticator.apply(credential, to: &request)
         }
     }
 
