@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2023 Space Code. All rights reserved.
+// Copyright © 2025 Space Code. All rights reserved.
 //
 
 import Foundation
@@ -12,5 +12,5 @@ public protocol IRequestBuilder: Sendable {
     /// - Parameter request: The request object that defines the request details.
     ///
     /// - Returns: A `URLRequest` constructed based on the given data.
-    func build(_ request: IRequest, _ configure: ((inout URLRequest) throws -> Void)?) throws -> URLRequest?
+    func build(_ request: IRequest, _ configure: (@Sendable (inout URLRequest) throws -> Void)?) throws -> URLRequest?
 }

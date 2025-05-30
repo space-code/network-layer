@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2023 Space Code. All rights reserved.
+// Copyright © 2025 Space Code. All rights reserved.
 //
 
 import Foundation
@@ -60,7 +60,11 @@ final class RequestProcessorAuthenicationTests: XCTestCase {
     }
 
     func test_thatRequestProcessorThrowsAnError_whenInterceptorAdaptDidFail() async throws {
-        try await test_failAuthentication(adaptError: URLError(.unknown), refreshError: nil, expectedError: URLError(.unknown))
+        try await test_failAuthentication(
+            adaptError: URLError(.unknown),
+            refreshError: nil,
+            expectedError: RetryPolicyError.retryLimitExceeded
+        )
     }
 
     func test_thatRequestProcessorThrowsAnError_whenInterceptorRefreshDidFail() async throws {
