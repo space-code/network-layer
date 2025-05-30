@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2023 Space Code. All rights reserved.
+// Copyright © 2025 Space Code. All rights reserved.
 //
 
 import Foundation
@@ -75,15 +75,15 @@ actor RequestProcessor {
         _ request: T,
         strategy: RetryPolicyStrategy? = nil,
         delegate: URLSessionDelegate?,
-        configure: ((inout URLRequest) throws -> Void)?
+        configure: (@Sendable (inout URLRequest) throws -> Void)?
     ) async throws -> Response<Data> {
-        guard var urlRequest = try requestBuilder.build(request, configure) else {
-            throw NetworkLayerError.badURL
-        }
+        try await performRequest(strategy: strategy) { [weak self] in
+            guard let self, var urlRequest = try requestBuilder.build(request, configure) else {
+                throw NetworkLayerError.badURL
+            }
 
-        try await adapt(request, urlRequest: &urlRequest, session: session)
+            try await adapt(request, urlRequest: &urlRequest, session: session)
 
-        return try await performRequest(strategy: strategy) { [urlRequest] in
             try await self.delegate?.wrappedValue?.requestProcessor(self, willSendRequest: urlRequest)
 
             let task = session.dataTask(with: urlRequest)
