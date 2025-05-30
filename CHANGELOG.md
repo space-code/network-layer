@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 - `1.1.x` Release Candidates - [1.1.0-rc.1](#110-rc1)
 - `1.0.x` Releases - [1.0.0](#100)
 
+## [1.1.0-rc.2](https://github.com/space-code/network-layer/releases/tag/1.1.0-rc.2)
+Released on 2025-05-30.
+
+#### Fixed
+- Fix adapting a request during retry.
+  - Fixed in Pull Request [#2](https://github.com/space-code/network-layer/pull/7).
+
 ## [1.1.0-rc.1](https://github.com/space-code/network-layer/releases/tag/1.1.0-rc.1)
 Released on 2024-12-25.
 
@@ -16,7 +23,7 @@ Released on 2024-12-25.
 - Fix the `inout` parameter in the `IAuthenticator` protocol
   - Fixed in Pull Request [#2](https://github.com/space-code/network-layer/pull/2).
 - Fix the package builiding.
-  - Fixed in Pull Request [#6](https://github.com/space-code/network-layer/pull-6).
+  - Fixed in Pull Request [#6](https://github.com/space-code/network-layer/pull/6).
 
 ## [1.0.0](https://github.com/space-code/network-layer/releases/tag/1.0.0)
 Released on 2023-12-04.
