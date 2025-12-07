@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2023 Space Code. All rights reserved.
+// Copyright © 2024 Space Code. All rights reserved.
 //
 
 import Foundation
@@ -23,7 +23,8 @@ extension RequestProcessor {
             ),
             requestBuilder: RequestBuilder(
                 parametersEncoder: RequestParametersEncoder(),
-                requestBodyEncoder: RequestBodyEncoder(jsonEncoder: JSONEncoder())
+                requestBodyEncoder: RequestBodyEncoder(jsonEncoder: JSONEncoder()),
+                queryFormatter: QueryParametersFormatter()
             ),
             dataRequestHandler: DataRequestHandler(),
             retryPolicyService: RetryPolicyService(strategy: .constant(retry: 1, duration: .seconds(0))),
