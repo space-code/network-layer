@@ -86,10 +86,10 @@ private extension String {
     static let domainName = "https://google.com"
 }
 
-private extension Dictionary where Self.Key == String, Self.Value == String {
+private extension [String: String] {
     static let contentType = ["Content-Type": "application/json"]
 }
 
-private extension Dictionary where Self.Key == String, Self.Value == Any {
+private extension [String: Any] {
     static let item = ["Content-Type": "application/json"]
 }

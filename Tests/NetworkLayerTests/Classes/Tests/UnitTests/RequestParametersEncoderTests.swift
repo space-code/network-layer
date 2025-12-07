@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2024 Space Code. All rights reserved.
+// Copyright © 2023 Space Code. All rights reserved.
 //
 
 import Foundation
@@ -63,6 +63,6 @@ private extension String {
     static let domainName = "https://google.com"
 }
 
-private extension Dictionary where Self.Key == String, Self.Value == String {
+private extension [String: String] {
     static let parameters = ["id": "1"]
 }

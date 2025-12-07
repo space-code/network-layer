@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2024 Space Code. All rights reserved.
+// Copyright © 2023 Space Code. All rights reserved.
 //
 
 import Atomic
@@ -64,7 +64,7 @@ public final class AuthenticationInterceptor<Authenticator: IAuthenticator>: IAu
             return
         }
 
-        guard let credential = credential else {
+        guard let credential else {
             throw AuthenticatorInterceptorError.missingCredential
         }
 

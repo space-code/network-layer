@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2024 Space Code. All rights reserved.
+// Copyright © 2023 Space Code. All rights reserved.
 //
 
 import Atomic
@@ -91,7 +91,7 @@ extension DataRequestHandler {
 
         userDataDelegate?.urlSession?(session, task: task, didCompleteWithError: error)
 
-        if let error = error {
+        if let error {
             handler.completion?(.failure(error))
         } else {
             if let response = task.response {

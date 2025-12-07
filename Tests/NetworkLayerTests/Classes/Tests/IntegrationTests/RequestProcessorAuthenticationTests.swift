@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2025 Space Code. All rights reserved.
+// Copyright © 2023 Space Code. All rights reserved.
 //
 
 import Foundation
@@ -88,12 +88,12 @@ final class RequestProcessorAuthenicationTests: XCTestCase {
             }
 
             func adapt(request _: inout URLRequest, for _: URLSession) async throws {
-                guard let adaptError = adaptError else { return }
+                guard let adaptError else { return }
                 throw adaptError
             }
 
             func refresh(_: URLRequest, with _: HTTPURLResponse, for _: URLSession) async throws {
-                guard let refreshError = refreshError else { return }
+                guard let refreshError else { return }
                 throw refreshError
             }
 

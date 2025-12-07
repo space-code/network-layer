@@ -6,8 +6,7 @@
 import Foundation
 
 extension URLSessionTask {
-    @objc dynamic
-    class func fake() -> URLSessionTask {
+    @objc dynamic class func fake() -> URLSessionTask {
         URLSession.shared.dataTask(with: .fake())
     }
 }

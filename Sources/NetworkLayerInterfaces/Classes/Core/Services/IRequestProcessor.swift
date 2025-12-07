@@ -18,8 +18,8 @@ public protocol IRequestProcessor {
     ///   - configure: An optional closure that allows custom configuration of the URLRequest before sending the request.
     ///                Pass `nil` if not
     /// needed.
-    func send<T: IRequest, M: Decodable>(
-        _ request: T,
+    func send<M: Decodable>(
+        _ request: some IRequest,
         strategy: RetryPolicyStrategy?,
         delegate: URLSessionDelegate?,
         configure: (@Sendable (inout URLRequest) throws -> Void)?
@@ -31,8 +31,8 @@ extension IRequestProcessor {
     ///
     /// - Parameters:
     ///   - request: The request object conforming to the `IRequest` protocol, representing the network request to be sent.
-    func send<T: IRequest, M: Decodable>(
-        _ request: T,
+    func send<M: Decodable>(
+        _ request: some IRequest,
         strategy: RetryPolicyStrategy?
     ) async throws -> Response<M> {
         try await send(request, strategy: strategy, delegate: nil, configure: nil)
