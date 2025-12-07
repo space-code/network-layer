@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2025 Space Code. All rights reserved.
+// Copyright © 2023 Space Code. All rights reserved.
 //
 
 import Foundation
@@ -71,8 +71,8 @@ actor RequestProcessor {
     ///   - configure: A closure to configure the URLRequest.
     ///
     /// - Returns: The response from the network request.
-    private func performRequest<T: IRequest>(
-        _ request: T,
+    private func performRequest(
+        _ request: some IRequest,
         strategy: RetryPolicyStrategy? = nil,
         delegate: URLSessionDelegate?,
         configure: (@Sendable (inout URLRequest) throws -> Void)?
@@ -103,7 +103,7 @@ actor RequestProcessor {
                     }
                 }
 
-                try await self.validate(response)
+                try await validate(response)
 
                 return response
             } catch {
@@ -118,7 +118,7 @@ actor RequestProcessor {
     ///   - request: The request model.
     ///   - urlRequest: The request that needs to be authenticated.
     ///   - session: The URLSession for which the request is being refreshed.
-    private func adapt<T: IRequest>(_ request: T, urlRequest: inout URLRequest, session: URLSession) async throws {
+    private func adapt(_ request: some IRequest, urlRequest: inout URLRequest, session: URLSession) async throws {
         guard request.requiresAuthentication else { return }
         try await interceptor?.adapt(request: &urlRequest, for: session)
     }
@@ -131,9 +131,9 @@ actor RequestProcessor {
     ///   - session: The URLSession for which the request is being refreshed.
     ///
     /// - Returns: `true` if the request's token is refreshed, false otherwise.
-    private func refresh<T>(
+    private func refresh(
         urlRequest: URLRequest,
-        response: Response<T>,
+        response: Response<some Any>,
         session: URLSession
     ) async throws -> Bool {
         guard let interceptor, let response = response.response as? HTTPURLResponse else { return false }
@@ -178,8 +178,8 @@ actor RequestProcessor {
 // MARK: IRequestProcessor
 
 extension RequestProcessor: IRequestProcessor {
-    func send<T: IRequest, M: Decodable & Sendable>(
-        _ request: T,
+    func send<M: Decodable & Sendable>(
+        _ request: some IRequest,
         strategy: RetryPolicyStrategy? = nil,
         delegate: URLSessionDelegate? = nil,
         configure: (@Sendable (inout URLRequest) throws -> Void)? = nil

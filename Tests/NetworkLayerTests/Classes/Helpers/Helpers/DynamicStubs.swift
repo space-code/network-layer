@@ -6,7 +6,7 @@
 import Foundation
 import Mocker
 
-final class DynamicStubs {
+enum DynamicStubs {
     static func register(stubs: [StubResponse], prefix: String = "https://github.com", statusCode: Int = 200) {
         for stub in stubs {
             let mock = Mock(

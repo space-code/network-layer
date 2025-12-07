@@ -26,7 +26,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SCHEME_NAME: "NetworkLayer"
+  SCHEME_NAME: "NetworkLayer-Package"
 
 jobs:
   test-apple-platforms:

@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2025 Space Code. All rights reserved.
+// Copyright © 2023 Space Code. All rights reserved.
 //
 
 import Foundation

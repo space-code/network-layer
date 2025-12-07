@@ -35,6 +35,6 @@ public struct Response<T> {
     }
 }
 
-// MARK: Sendable
+// MARK: @unchecked Sendable
 
 extension Response: @unchecked Sendable where T: Sendable {}

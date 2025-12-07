@@ -70,7 +70,7 @@ final class RequestProcessorTests: XCTestCase {
 
         // when
         do {
-            let _ = try await sut.send(request) as Response<Int>
+            _ = try await sut.send(request) as Response<Int>
         } catch {}
 
         // then
@@ -88,7 +88,7 @@ final class RequestProcessorTests: XCTestCase {
 
         // when
         do {
-            let _ = try await sut.send(request) as Response<Int>
+            _ = try await sut.send(request) as Response<Int>
         } catch {}
 
         // then
@@ -107,7 +107,7 @@ final class RequestProcessorTests: XCTestCase {
 
         // when
         do {
-            let _ = try await sut.send(request) as Response<Int>
+            _ = try await sut.send(request) as Response<Int>
         } catch {}
 
         // then
@@ -125,7 +125,7 @@ final class RequestProcessorTests: XCTestCase {
 
         // when
         do {
-            let _ = try await sut.send(request) as Response<Int>
+            _ = try await sut.send(request) as Response<Int>
         } catch {}
 
         // then
