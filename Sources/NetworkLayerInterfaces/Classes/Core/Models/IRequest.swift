@@ -19,7 +19,7 @@ public protocol IRequest: Sendable {
     var headers: [String: String]? { get }
 
     /// A dictionary that contains the parameters to be encoded into the request.
-    var parameters: [String: String]? { get }
+    var parameters: [AnyHashable: Any]? { get }
 
     /// A Boolean value indicating whether authentication is required.
     var requiresAuthentication: Bool { get }
@@ -44,7 +44,7 @@ public extension IRequest {
     }
 
     /// A dictionary that contains the parameters to be encoded into the request.
-    var parameters: [String: String]? {
+    var parameters: [AnyHashable: Any]? {
         nil
     }
 

@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2023 Space Code. All rights reserved.
+// Copyright © 2024 Space Code. All rights reserved.
 //
 
 @testable import NetworkLayer
@@ -13,6 +13,7 @@ final class RequestBuilderTests: XCTestCase {
 
     private var parametersEncoderMock: RequestParametersEncoderMock!
     private var requestBodyEncoderMock: RequestBodyEncoderMock!
+    private var queryParametersFormatterMock: QueryParametersFormatterMock!
 
     private var sut: RequestBuilder!
 
@@ -22,9 +23,11 @@ final class RequestBuilderTests: XCTestCase {
         super.setUp()
         parametersEncoderMock = RequestParametersEncoderMock()
         requestBodyEncoderMock = RequestBodyEncoderMock()
+        queryParametersFormatterMock = QueryParametersFormatterMock()
         sut = RequestBuilder(
             parametersEncoder: parametersEncoderMock,
-            requestBodyEncoder: requestBodyEncoderMock
+            requestBodyEncoder: requestBodyEncoderMock,
+            queryFormatter: queryParametersFormatterMock
         )
     }
 
@@ -32,6 +35,7 @@ final class RequestBuilderTests: XCTestCase {
         parametersEncoderMock = nil
         requestBodyEncoderMock = nil
         sut = nil
+        queryParametersFormatterMock = nil
         super.tearDown()
     }
 
@@ -61,6 +65,8 @@ final class RequestBuilderTests: XCTestCase {
         requestStub.stubbedHttpMethod = .post
         requestStub.stubbedHttpBody = .dictionary(.item)
         requestStub.stubbedParameters = .contentType
+
+        queryParametersFormatterMock.stubbedFormat = .contentType
 
         // when
         var invokedConfigure = false

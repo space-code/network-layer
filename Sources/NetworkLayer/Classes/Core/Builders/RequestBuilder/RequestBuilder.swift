@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2023 Space Code. All rights reserved.
+// Copyright © 2024 Space Code. All rights reserved.
 //
 
 import Foundation
@@ -11,15 +11,18 @@ final class RequestBuilder: IRequestBuilder, @unchecked Sendable {
 
     private let parametersEncoder: IRequestParametersEncoder
     private let requestBodyEncoder: IRequestBodyEncoder
+    private let queryFormatter: IQueryParametersFormatter
 
     // MARK: Initialization
 
     init(
         parametersEncoder: IRequestParametersEncoder,
-        requestBodyEncoder: IRequestBodyEncoder
+        requestBodyEncoder: IRequestBodyEncoder,
+        queryFormatter: IQueryParametersFormatter
     ) {
         self.parametersEncoder = parametersEncoder
         self.requestBodyEncoder = requestBodyEncoder
+        self.queryFormatter = queryFormatter
     }
 
     // MARK: IRequestBuilder
@@ -42,7 +45,8 @@ final class RequestBuilder: IRequestBuilder, @unchecked Sendable {
 
         setHeaders(to: &urlRequest, headers: request.headers)
 
-        try parametersEncoder.encode(parameters: request.parameters ?? [:], to: &urlRequest)
+        let parameters = queryFormatter.format(rawParameters: request.parameters ?? [:])
+        try parametersEncoder.encode(parameters: parameters, to: &urlRequest)
 
         if let httpBody = request.httpBody {
             try requestBodyEncoder.encode(body: httpBody, to: &urlRequest)

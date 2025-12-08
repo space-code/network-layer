@@ -1,6 +1,6 @@
 //
 // network-layer
-// Copyright © 2023 Space Code. All rights reserved.
+// Copyright © 2024 Space Code. All rights reserved.
 //
 
 import Foundation
@@ -64,7 +64,8 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
     private var requestBuilder: IRequestBuilder {
         RequestBuilder(
             parametersEncoder: parametersEncoder,
-            requestBodyEncoder: requestBodyEncoder
+            requestBodyEncoder: requestBodyEncoder,
+            queryFormatter: queryFormatter
         )
     }
 
@@ -74,5 +75,9 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
 
     private var requestBodyEncoder: IRequestBodyEncoder {
         RequestBodyEncoder(jsonEncoder: jsonEncoder)
+    }
+
+    private var queryFormatter: IQueryParametersFormatter {
+        QueryParametersFormatter()
     }
 }
