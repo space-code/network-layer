@@ -99,7 +99,7 @@ jobs:
 
   merge-test-reports:
     needs: test-apple-platforms
-    runs-on: macos-13
+    runs-on: macos-15
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v6
@@ -115,7 +115,7 @@ jobs:
 
   discover-typos:
     name: Discover Typos
-    runs-on: macos-13
+    runs-on: macos-15
     env:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
