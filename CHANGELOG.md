@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Implemented by [@ns-vasilev](https://github.com/ns-vasilev) in Pull Request [#9](https://github.com/space-code/network-layer/pull/9).
 
 ### Miscellaneous Tasks
+- Automate code formatting and linting with github actions
+  - Contributed by [@ns-vasilev](https://github.com/ns-vasilev) in Pull Request [#30](https://github.com/space-code/network-layer/pull/30).
 - Add codeowners
   - Contributed by [@ns-vasilev](https://github.com/ns-vasilev) in Pull Request [#25](https://github.com/space-code/network-layer/pull/25).
 - Update workflow to run tests and build project
@@ -52,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Contributed by [@renovate[bot]](https://github.com/renovate[bot]) in Pull Request [#15](https://github.com/space-code/network-layer/pull/15).
 
 ### New Contributors
-* @renovate[bot] made their first contribution in [#27](https://github.com/space-code/network-layer/pull/27)
+* @renovate[bot] made their first contribution in 
 
 ## [1.0.0](https://github.com/space-code/network-layer/releases/tag/1.0.0)
 
