@@ -60,7 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Contributed by [@renovate[bot]](https://github.com/renovate[bot]) in Pull Request [#15](https://github.com/space-code/network-layer/pull/15).
 
 ### New Contributors
-* @renovate[bot] made their first contribution in [#29](https://github.com/space-code/network-layer/pull/29)
+* @renovate[bot] made their first contribution in [#28](https://github.com/space-code/network-layer/pull/28)
 
 ## [1.0.0](https://github.com/space-code/network-layer/releases/tag/1.0.0)
 
