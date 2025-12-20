@@ -52,13 +52,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Contributed by [@ns-vasilev](https://github.com/ns-vasilev) in Pull Request [#2](https://github.com/space-code/network-layer/pull/2).
 
 ### Chore
+- Update dependency space-code/typhoon to v1.4.0
+  - Contributed by [@renovate[bot]](https://github.com/renovate[bot]) in Pull Request [#29](https://github.com/space-code/network-layer/pull/29).
 - Update dependency space-code/typhoon to v1.3.0
   - Contributed by [@renovate[bot]](https://github.com/renovate[bot]) in Pull Request [#20](https://github.com/space-code/network-layer/pull/20).
 - Update dependency wetransfer/mocker to v3.0.2
   - Contributed by [@renovate[bot]](https://github.com/renovate[bot]) in Pull Request [#15](https://github.com/space-code/network-layer/pull/15).
 
 ### New Contributors
-* @renovate[bot] made their first contribution in 
+* @renovate[bot] made their first contribution in [#29](https://github.com/space-code/network-layer/pull/29)
 
 ## [1.0.0](https://github.com/space-code/network-layer/releases/tag/1.0.0)
 
