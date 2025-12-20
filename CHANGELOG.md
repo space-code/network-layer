@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Features
+- Add release workflow for GitHub Actions
+  - Implemented by [@ns-vasilev](https://github.com/ns-vasilev) in Pull Request [#31](https://github.com/space-code/network-layer/pull/31).
 - Implement query parameters formatter
   - Implemented by [@ns-vasilev](https://github.com/ns-vasilev) in Pull Request [#10](https://github.com/space-code/network-layer/pull/10).
 - Switch from Makefile to Mise
