@@ -7,22 +7,35 @@ import Foundation
 import NetworkLayerInterfaces
 import Typhoon
 
+/// A final class responsible for assembling the network layer components.
+/// It configures the `IRequestProcessor` with necessary dependencies such as retry policies, interceptors, and encoders.
 public final class NetworkLayerAssembly: INetworkLayerAssembly {
     // MARK: Properties
 
-    /// The network layer's configuration.
+    /// The configuration settings for the network session and decoding.
     private let configure: Configuration
-    /// The retry policy service.
+    /// The specific strategy used to handle request retries.
     private let retryPolicyStrategy: RetryPolicyStrategy?
-    /// The request processor delegate.
+    /// A thread-safe wrapper for the request processor delegate.
     private var delegate: SafeRequestProcessorDelegate?
-    /// The authenticator interceptor.
+    /// An optional interceptor for handling authentication (e.g., adding tokens).
     private let interceptor: IAuthenticationInterceptor?
-    /// The json encoder.
+    /// The encoder used to transform objects into JSON data for request bodies.
     private let jsonEncoder: JSONEncoder
+    /// A global evaluator to determine if a retry should be attempted based on the error.
+    /// This applies to all requests processed by this instance.
+    private let retryEvaluator: (@Sendable (Error) -> Bool)?
 
     // MARK: Initialization
 
+    /// Initializes a new instance of the assembly.
+    /// - Parameters:
+    ///   - configure: The network configuration. Defaults to a standard session setup.
+    ///   - retryStrategy: The strategy to determine how retries are handled. Defaults to `.none`.
+    ///   - delegate: An optional delegate to observe request lifecycle events.
+    ///   - interceptor: An optional interceptor for request/response modification.
+    ///   - jsonEncoder: The encoder used for request bodies.
+    ///   - retryEvaluator: A global evaluator to determine if a retry should be attempted based on the error.
     public init(
         configure: Configuration = .init(
             sessionConfiguration: .default,
@@ -30,37 +43,47 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
             sessionDelegateQueue: nil,
             jsonDecoder: JSONDecoder()
         ),
-        retryPolicyStrategy: RetryPolicyStrategy? = nil,
+        retryStrategy: RetryStrategy = .none,
         delegate: RequestProcessorDelegate? = nil,
         interceptor: IAuthenticationInterceptor? = nil,
-        jsonEncoder: JSONEncoder = JSONEncoder()
+        jsonEncoder: JSONEncoder = JSONEncoder(),
+        retryEvaluator: (@Sendable (Error) -> Bool)? = nil
     ) {
         self.configure = configure
-        self.retryPolicyStrategy = retryPolicyStrategy
         self.delegate = SafeRequestProcessorDelegate(delegate: delegate)
         self.interceptor = interceptor
         self.jsonEncoder = jsonEncoder
+        self.retryEvaluator = retryEvaluator
+
+        switch retryStrategy {
+        case .none:
+            retryPolicyStrategy = nil
+        case .default:
+            retryPolicyStrategy = .constant(retry: 5, duration: .seconds(1))
+        case let .custom(strategy):
+            retryPolicyStrategy = strategy
+        }
     }
 
     // MARK: INetworkLayerAssembly
 
+    /// Assembles and returns a fully configured request processor.
+    /// - Returns: An object conforming to `IRequestProcessor` ready to handle network calls.
     public func assemble() -> IRequestProcessor {
         RequestProcessor(
             configuration: configure,
             requestBuilder: requestBuilder,
             dataRequestHandler: DataRequestHandler(),
-            retryPolicyService: RetryPolicyService(strategy: retryPolicyStrategy ?? defaultStrategy),
+            retryPolicyService: retryPolicyStrategy.map { RetryPolicyService(strategy: $0) },
             delegate: delegate,
-            interceptor: interceptor
+            interceptor: interceptor,
+            retryEvaluator: retryEvaluator
         )
     }
 
-    // MARK: Private
+    // MARK: - Private Computed Properties
 
-    private var defaultStrategy: RetryPolicyStrategy {
-        .constant(retry: 5, duration: .seconds(1))
-    }
-
+    /// Creates a request builder with the necessary encoders and formatters.
     private var requestBuilder: IRequestBuilder {
         RequestBuilder(
             parametersEncoder: parametersEncoder,
@@ -69,14 +92,17 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
         )
     }
 
+    /// Provides the encoder for general request parameters.
     private var parametersEncoder: IRequestParametersEncoder {
         RequestParametersEncoder()
     }
 
+    /// Provides the encoder for the request body, utilizing the assembly's JSON encoder.
     private var requestBodyEncoder: IRequestBodyEncoder {
         RequestBodyEncoder(jsonEncoder: jsonEncoder)
     }
 
+    /// Provides the formatter for URL query parameters.
     private var queryFormatter: IQueryParametersFormatter {
         QueryParametersFormatter()
     }

@@ -44,7 +44,8 @@ final class RequestProcessorTests: XCTestCase {
             dataRequestHandler: dataRequestHandler,
             retryPolicyService: retryPolicyMock,
             delegate: SafeRequestProcessorDelegate(delegate: delegateMock),
-            interceptor: interceptorMock
+            interceptor: interceptorMock,
+            retryEvaluator: { _ in true }
         )
     }
 
