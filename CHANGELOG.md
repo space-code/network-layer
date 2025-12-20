@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Implemented by [@ns-vasilev](https://github.com/ns-vasilev) in Pull Request [#9](https://github.com/space-code/network-layer/pull/9).
 
 ### Miscellaneous Tasks
+- Delete Mintfile
+  - Contributed by [@ns-vasilev](https://github.com/ns-vasilev) in Pull Request [#33](https://github.com/space-code/network-layer/pull/33).
 - Add conventional-pr.yml for PR validation
   - Contributed by [@ns-vasilev](https://github.com/ns-vasilev) in Pull Request [#32](https://github.com/space-code/network-layer/pull/32).
 - Automate code formatting and linting with github actions
