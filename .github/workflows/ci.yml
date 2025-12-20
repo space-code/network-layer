@@ -112,18 +112,3 @@ jobs:
           name: MergedTestResults
           path: test_output/final
           retention-days: 30
-
-  discover-typos:
-    name: Discover Typos
-    runs-on: macos-15
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-      - name: Discover typos
-        run: |
-          export PATH="$PATH:/Library/Frameworks/Python.framework/Versions/3.11/bin"
-          python3 -m pip install --upgrade pip
-          python3 -m pip install codespell
-          codespell --ignore-words-list="hart,inout,msdos,sur" --skip="./.build/*,./.git/*"

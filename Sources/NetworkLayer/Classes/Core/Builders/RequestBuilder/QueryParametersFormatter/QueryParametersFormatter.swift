@@ -32,12 +32,12 @@ final class QueryParametersFormatter: IQueryParametersFormatter {
 
     func format(rawParameters: [AnyHashable: Any]) -> [String: String] {
         var result: [String: String] = [:]
-        rawParameters.forEach { key, value in
+        for (key, value) in rawParameters {
             guard
                 let encodedKey = convertKeyToEncodedString(key),
                 let encodedValue = convertValueToEncodedString(value)
             else {
-                return
+                continue
             }
             result[encodedKey] = encodedValue
         }
@@ -49,11 +49,11 @@ final class QueryParametersFormatter: IQueryParametersFormatter {
     private func convertKeyToEncodedString(_ key: AnyHashable) -> String? {
         switch key {
         case let string as String:
-            return encodeQueryComponent(string)
+            encodeQueryComponent(string)
         case let encodedComponent as SpecificEncodedComponent:
-            return encodedComponent.encodedValue
+            encodedComponent.encodedValue
         case let convertible as CustomStringConvertible:
-            return encodeQueryComponent(convertible.description)
+            encodeQueryComponent(convertible.description)
         }
     }
 
