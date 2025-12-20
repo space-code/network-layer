@@ -18,7 +18,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/space-code/atomic", exact: "1.1.0"),
-        .package(url: "https://github.com/space-code/typhoon", exact: "1.3.0"),
+        .package(url: "https://github.com/space-code/typhoon", exact: "1.4.0"),
         .package(url: "https://github.com/WeTransfer/Mocker", exact: "3.0.2"),
     ],
     targets: [
