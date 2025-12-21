@@ -65,7 +65,7 @@ Add the following dependency to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/space-code/network-layer.git", from: "1.0.0")
+    .package(url: "https://github.com/space-code/network-layer.git", from: "1.1.0")
 ]
 ```
 
