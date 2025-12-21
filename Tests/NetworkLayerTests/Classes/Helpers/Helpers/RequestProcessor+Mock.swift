@@ -29,7 +29,8 @@ extension RequestProcessor {
             dataRequestHandler: DataRequestHandler(),
             retryPolicyService: RetryPolicyService(strategy: .constant(retry: 1, duration: .seconds(0))),
             delegate: SafeRequestProcessorDelegate(delegate: requestProcessorDelegate),
-            interceptor: interceptor
+            interceptor: interceptor,
+            retryEvaluator: { _ in true }
         )
     }
 

@@ -22,7 +22,8 @@ public protocol IRequestProcessor {
         _ request: some IRequest,
         strategy: RetryPolicyStrategy?,
         delegate: URLSessionDelegate?,
-        configure: (@Sendable (inout URLRequest) throws -> Void)?
+        configure: (@Sendable (inout URLRequest) throws -> Void)?,
+        shouldRetry: (@Sendable (Error) -> Bool)?
     ) async throws -> Response<M>
 }
 
@@ -35,6 +36,14 @@ extension IRequestProcessor {
         _ request: some IRequest,
         strategy: RetryPolicyStrategy?
     ) async throws -> Response<M> {
-        try await send(request, strategy: strategy, delegate: nil, configure: nil)
+        try await send(request, strategy: strategy, delegate: nil, configure: nil, shouldRetry: nil)
+    }
+
+    /// Sends a network request with default parameters.
+    ///
+    /// - Parameters:
+    ///   - request: The request object conforming to the `IRequest` protocol, representing the network request to be sent.
+    func send<M: Decodable>(_ request: some IRequest) async throws -> Response<M> {
+        try await send(request, strategy: nil, delegate: nil, configure: nil, shouldRetry: nil)
     }
 }
