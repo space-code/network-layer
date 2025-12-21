@@ -123,14 +123,20 @@ jobs:
         with:
           version: ${{ needs.release.outputs.next-version }}
           project-name: 'NetworkLayer'
-          project-description: 'NetworkLayer is a modern, lightweight Swift framework that provides elegant and robust retry policies for asynchronous operations.'
+          project-description: 'NetworkLayer is a modern, type-safe Swift framework for elegant network communication. Built with async/await and actor-based architecture for thread-safe request processing.'
           modules: |
             [
               {
                 "name": "NetworkLayer",
                 "path": "networklayer",
-                "description": "Core retry mechanisms and policies for asynchronous operations. Includes retry strategies, backoff algorithms, and cancellation support.",
+                "description": "Core networking functionality including request processing, authentication handling, retry policies, and session management. Features thread-safe actor-based architecture.",
                 "badge": "Core Module"
+              },
+              {
+                "name": "NetworkLayerInterfaces",
+                "path": "networklayerinterfaces",
+                "description": "Protocol definitions and public interfaces for extensibility and testing. Includes IRequest, IRequestProcessor, and IAuthenticationInterceptor protocols.",
+                "badge": "Interfaces"
               }
             ]
       - name: Deploy
