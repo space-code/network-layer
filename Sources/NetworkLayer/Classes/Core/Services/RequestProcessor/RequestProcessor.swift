@@ -189,14 +189,10 @@ actor RequestProcessor {
         send: @Sendable () async throws -> T,
         shouldRetry: @Sendable @escaping (Error) -> Bool
     ) async throws -> T {
-        do {
-            return try await send()
-        } catch {
-            if let retryPolicyService {
-                return try await retryPolicyService.retry(strategy: strategy, onFailure: shouldRetry, send)
-            } else {
-                throw error
-            }
+        if let retryPolicyService {
+            try await retryPolicyService.retry(strategy: strategy, onFailure: shouldRetry, send)
+        } else {
+            try await send()
         }
     }
 
