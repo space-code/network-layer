@@ -17,7 +17,7 @@ protocol IQueryParametersFormatter {
 final class QueryParametersFormatter: IQueryParametersFormatter {
     // MARK: Properties
 
-    // Properties
+    /// Properties
     private let allowedCharacters: CharacterSet = {
         var restricted = CharacterSet(charactersIn: ":/?#[]@!$ &''()*+,;=\"<>%{}|\\^~`")
         restricted.formUnion(.newlines)
