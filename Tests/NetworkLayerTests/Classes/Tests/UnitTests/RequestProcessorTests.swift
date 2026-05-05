@@ -30,7 +30,7 @@ final class RequestProcessorTests: XCTestCase {
         retryPolicyMock = RetryPolicyService(
             strategy: .constant(
                 retry: 5,
-                duration: .seconds(.zero)
+                dispatchDuration: .seconds(.zero)
             )
         )
         delegateMock = RequestProcessorDelegateMock()
@@ -281,8 +281,8 @@ final class RequestProcessorTests: XCTestCase {
 
     func test_send_retriesWithCustomStrategy_whenStrategyIsProvided() async {
         // given
-        let customRetryCount = 3
-        let customStrategy = RetryPolicyStrategy.constant(retry: customRetryCount, duration: .seconds(.zero))
+        let customRetryCount: UInt = 3
+        let customStrategy = RetryPolicyStrategy.constant(retry: customRetryCount, dispatchDuration: .seconds(.zero))
 
         requestBuilderMock.stubbedBuildResult = URLRequest.fake()
         dataRequestHandler.startDataTaskThrowError = URLError(.networkConnectionLost)
@@ -305,7 +305,7 @@ final class RequestProcessorTests: XCTestCase {
             "Request should be retried with custom strategy"
         )
         XCTAssertLessThanOrEqual(
-            dataRequestHandler.invokedStartDataTaskCount,
+            UInt(dataRequestHandler.invokedStartDataTaskCount),
             customRetryCount + 1,
             "Should not exceed custom retry count plus initial attempt"
         )

@@ -59,7 +59,7 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
         case .none:
             retryPolicyStrategy = nil
         case .default:
-            retryPolicyStrategy = .constant(retry: 5, duration: .seconds(1))
+            retryPolicyStrategy = .constant(retry: 5, dispatchDuration: .seconds(1))
         case let .custom(strategy):
             retryPolicyStrategy = strategy
         }
