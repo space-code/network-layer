@@ -23,14 +23,14 @@ final class AuthentificatorInterceptorMock: IAuthenticationInterceptor, @uncheck
     var invokedRefreshCount = 0
     var invokedRefreshParameters: (request: URLRequest, response: HTTPURLResponse, session: URLSession)?
     var invokedRefreshParametersList = [(request: URLRequest, response: HTTPURLResponse, session: URLSession)]()
-    var refreshClosure: (() -> Void)?
+    var refreshClosure: (() async throws -> Void)?
 
-    func refresh(_ request: URLRequest, with response: HTTPURLResponse, for session: URLSession) {
+    func refresh(_ request: URLRequest, with response: HTTPURLResponse, for session: URLSession) async throws {
         invokedRefresh = true
         invokedRefreshCount += 1
         invokedRefreshParameters = (request, response, session)
         invokedRefreshParametersList.append((request, response, session))
-        refreshClosure?()
+        try await refreshClosure?()
     }
 
     var invokedIsRequireRefresh = false

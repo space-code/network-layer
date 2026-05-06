@@ -41,6 +41,14 @@ actor RequestProcessor {
     /// This applies to all requests processed by this instance.
     private let retryEvaluator: (@Sendable (Error) -> RetryAction)?
 
+    /// A shared in-flight refresh task. All requests that need a token refresh
+    /// will await this single task instead of each triggering their own refresh.
+    ///
+    /// Because `RequestProcessor` is an `actor`, access to this property is
+    /// automatically serialised — no additional locking is required.
+    /// When `nil`, no refresh is currently in flight.
+    private var pendingRefreshTask: Task<Void, Error>?
+
     // MARK: - Initialization
 
     /// Creates a new `RequestProcessor` instance.
@@ -52,6 +60,7 @@ actor RequestProcessor {
     ///   - retryPolicyService: The retry policy service.
     ///   - delegate: A thread-safe delegate for processor events.
     ///   - interceptor: An authenticator interceptor.
+    ///   - retryEvaluator: A global closure that decides whether a failed request should be retried.
     init(
         configuration: Configuration,
         requestBuilder: IRequestBuilder,
@@ -87,6 +96,7 @@ actor RequestProcessor {
     ///   - strategy: An optional override for the retry policy strategy.
     ///   - delegate: A delegate to handle session-level events.
     ///   - configure: A closure for final modifications to the `URLRequest`.
+    ///   - shouldRetry: An optional per-call closure that decides whether to retry on a given error.
     /// - Returns: A `Response` object containing the raw `Data`.
     private func performRequest(
         _ request: some IRequest,
@@ -118,26 +128,46 @@ actor RequestProcessor {
         try await interceptor?.adapt(request: &urlRequest, for: session)
     }
 
-    /// Checks if a request requires a credential refresh and performs it if necessary.
+    /// Ensures that only a single token refresh is in flight at any given time.
+    ///
+    /// When the first request detects that a refresh is needed it creates a shared `Task`
+    /// and stores it in `pendingRefreshTask`. Every subsequent request that arrives while
+    /// the refresh is still running will `await` that same task instead of starting a new
+    /// one, preventing the "thundering herd" problem. Once the task completes (successfully
+    /// or with an error) `pendingRefreshTask` is cleared so the next cycle can start fresh.
     ///
     /// - Parameters:
-    ///   - urlRequest: The failed or unauthorized request.
-    ///   - response: The received network response.
+    ///   - urlRequest: The unauthorized request that triggered the refresh check.
+    ///   - response: The HTTP response received for `urlRequest`.
     ///   - session: The current `URLSession`.
-    /// - Returns: `true` if a refresh was triggered, `false` otherwise.
-    private func refresh(
+    /// - Returns: `true` if a refresh was triggered or awaited, `false` if none was needed.
+    private func refreshIfNeeded(
         urlRequest: URLRequest,
         response: Response<some Any>,
         session: URLSession
     ) async throws -> Bool {
-        guard let interceptor, let response = response.response as? HTTPURLResponse else { return false }
+        guard
+            let interceptor,
+            let httpResponse = response.response as? HTTPURLResponse,
+            interceptor.isRequireRefresh(urlRequest, response: httpResponse)
+        else { return false }
 
-        if interceptor.isRequireRefresh(urlRequest, response: response) {
-            try await interceptor.refresh(urlRequest, with: response, for: session)
+        // Re-use the existing task if a refresh is already running.
+        if let existingTask = pendingRefreshTask {
+            try await existingTask.value
             return true
         }
 
-        return false
+        // We are the first — own the refresh task.
+        let refreshTask = Task<Void, Error> { [interceptor] in
+            try await interceptor.refresh(urlRequest, with: httpResponse, for: session)
+        }
+
+        pendingRefreshTask = refreshTask
+        defer { pendingRefreshTask = nil }
+
+        try await refreshTask.value
+        return true
     }
 
     /// Wraps a request operation with retry logic provided by the `retryPolicyService`.
@@ -223,10 +253,16 @@ actor RequestProcessor {
     }
 
     /// Retries the request once if the initial response requires a token refresh.
-    /// Throws if the response is still unauthorized after the retry.
+    ///
+    /// Uses `refreshIfNeeded` to ensure only one refresh is performed even when
+    /// multiple requests detect an expired token simultaneously. After the shared
+    /// refresh resolves, this method re-executes the data task with the new credential.
+    /// If the retried response still requires a refresh the request is considered
+    /// permanently unauthorized and `AuthenticatorInterceptorError.missingCredential`
+    /// is thrown.
     ///
     /// - Parameters:
-    ///   - urlRequest: The original `URLRequest` to retry.
+    ///   - urlRequest: The original `URLRequest` to retry after a token refresh.
     ///   - response: The initial response received before any retry attempt.
     ///   - delegate: An optional `URLSessionDelegate` for task-level events.
     /// - Returns: The original response if no retry was needed, or the retried response on success.
@@ -237,13 +273,18 @@ actor RequestProcessor {
         response: Response<Data>,
         delegate: URLSessionDelegate?
     ) async throws -> Response<Data> {
-        guard try await refresh(urlRequest: urlRequest, response: response, session: session) else {
+        guard try await refreshIfNeeded(urlRequest: urlRequest, response: response, session: session) else {
             return response
         }
 
-        let retryResponse = try await performDataTask(urlRequest: urlRequest, delegate: delegate)
+        var adaptedRequest = urlRequest
+        try await interceptor?.adapt(request: &adaptedRequest, for: session)
 
-        guard try await !refresh(urlRequest: urlRequest, response: retryResponse, session: session) else {
+        let retryResponse = try await performDataTask(urlRequest: adaptedRequest, delegate: delegate)
+
+        if let httpRetryResponse = retryResponse.response as? HTTPURLResponse,
+           interceptor?.isRequireRefresh(adaptedRequest, response: httpRetryResponse) == true
+        {
             throw AuthenticatorInterceptorError.missingCredential
         }
 
