@@ -23,12 +23,14 @@ final class AuthentificatorInterceptorMock: IAuthenticationInterceptor, @uncheck
     var invokedRefreshCount = 0
     var invokedRefreshParameters: (request: URLRequest, response: HTTPURLResponse, session: URLSession)?
     var invokedRefreshParametersList = [(request: URLRequest, response: HTTPURLResponse, session: URLSession)]()
+    var refreshClosure: (() -> Void)?
 
     func refresh(_ request: URLRequest, with response: HTTPURLResponse, for session: URLSession) {
         invokedRefresh = true
         invokedRefreshCount += 1
         invokedRefreshParameters = (request, response, session)
         invokedRefreshParametersList.append((request, response, session))
+        refreshClosure?()
     }
 
     var invokedIsRequireRefresh = false
@@ -36,12 +38,13 @@ final class AuthentificatorInterceptorMock: IAuthenticationInterceptor, @uncheck
     var invokedIsRequireRefreshParameters: (request: URLRequest, response: HTTPURLResponse)?
     var invokedIsRequireRefreshParametersList = [(request: URLRequest, response: HTTPURLResponse)]()
     var stubbedIsRequireRefreshResult: Bool! = false
+    var isRequireRefreshClosure: (() -> Bool)?
 
     func isRequireRefresh(_ request: URLRequest, response: HTTPURLResponse) -> Bool {
         invokedIsRequireRefresh = true
         invokedIsRequireRefreshCount += 1
         invokedIsRequireRefreshParameters = (request, response)
         invokedIsRequireRefreshParametersList.append((request, response))
-        return stubbedIsRequireRefreshResult
+        return isRequireRefreshClosure?() ?? stubbedIsRequireRefreshResult
     }
 }

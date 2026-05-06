@@ -30,7 +30,7 @@ final class RequestProcessorRequestTests: XCTestCase {
         XCTAssertNotNil(user.data.avatarUrl)
     }
 
-    func test_thatRequestProcessorThrowsRretryLimitExceededError_whenRequestDidFail() async {
+    func test_thatRequestProcessorThrowsRetryLimitExceededError_whenRequestDidFail() async {
         // given
         DynamicStubs.register(stubs: [.user], statusCode: 500)
 
@@ -39,11 +39,19 @@ final class RequestProcessorRequestTests: XCTestCase {
         let request = makeRequest(.user)
 
         // when
+        var thrownError: Error?
         do {
             let _: Response<User> = try await sut.send(request)
         } catch {
-            XCTAssertEqual(error as NSError, RetryPolicyError.retryLimitExceeded as NSError)
+            thrownError = error
         }
+
+        // then
+        guard case let .retryLimitExceeded(errors) = thrownError as? RetryPolicyError else {
+            XCTFail("Expected RetryPolicyError.retryLimitExceeded, got \(String(describing: thrownError))")
+            return
+        }
+        XCTAssertFalse(errors.isEmpty, "Collected errors should not be empty")
     }
 
     func test_thatRequestProcessorConfigureARequest() async throws {
