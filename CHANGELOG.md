@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 ## [Unreleased]
 
+### Features
+- Implement credentials refresh
+  - Implemented by [@ns-vasilev](https://github.com/ns-vasilev) in Pull Request [#72](https://github.com/space-code/network-layer/pull/72).
+
 ### Miscellaneous Tasks
 - Update
   - Contributed by [@ns-vasilev](https://github.com/ns-vasilev) in Pull Request [#70](https://github.com/space-code/network-layer/pull/70).
