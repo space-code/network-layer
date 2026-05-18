@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import enum Typhoon.RetryAction
 import enum Typhoon.RetryPolicyStrategy
 
 // MARK: - INetworkLayerAssembly
@@ -28,7 +29,7 @@ public protocol INetworkLayerAssembly {
         delegate: RequestProcessorDelegate?,
         interceptor: IAuthenticationInterceptor?,
         jsonEncoder: JSONEncoder,
-        retryEvaluator: (@Sendable (Error) -> Bool)?
+        retryEvaluator: (@Sendable (Error) -> RetryAction)?
     )
 
     /// Construct and link all internal components to create a request processor.

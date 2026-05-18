@@ -39,7 +39,15 @@ actor RequestProcessor {
 
     /// A global evaluator to determine if a retry should be attempted based on the error.
     /// This applies to all requests processed by this instance.
-    private let retryEvaluator: (@Sendable (Error) -> Bool)?
+    private let retryEvaluator: (@Sendable (Error) -> RetryAction)?
+
+    /// A shared in-flight refresh task. All requests that need a token refresh
+    /// will await this single task instead of each triggering their own refresh.
+    ///
+    /// Because `RequestProcessor` is an `actor`, access to this property is
+    /// automatically serialised — no additional locking is required.
+    /// When `nil`, no refresh is currently in flight.
+    private var pendingRefreshTask: Task<Void, Error>?
 
     // MARK: - Initialization
 
@@ -52,6 +60,7 @@ actor RequestProcessor {
     ///   - retryPolicyService: The retry policy service.
     ///   - delegate: A thread-safe delegate for processor events.
     ///   - interceptor: An authenticator interceptor.
+    ///   - retryEvaluator: A global closure that decides whether a failed request should be retried.
     init(
         configuration: Configuration,
         requestBuilder: IRequestBuilder,
@@ -59,7 +68,7 @@ actor RequestProcessor {
         retryPolicyService: IRetryPolicyService?,
         delegate: SafeRequestProcessorDelegate?,
         interceptor: IAuthenticationInterceptor?,
-        retryEvaluator: (@Sendable (Error) -> Bool)?
+        retryEvaluator: (@Sendable (Error) -> RetryAction)?
     ) {
         self.configuration = configuration
         self.requestBuilder = requestBuilder
@@ -80,7 +89,6 @@ actor RequestProcessor {
 
     // MARK: - Private Methods
 
-    // swiftlint:disable function_body_length
     /// Orchestrates the execution of a network request, including building, adaptation, and error handling.
     ///
     /// - Parameters:
@@ -88,61 +96,26 @@ actor RequestProcessor {
     ///   - strategy: An optional override for the retry policy strategy.
     ///   - delegate: A delegate to handle session-level events.
     ///   - configure: A closure for final modifications to the `URLRequest`.
+    ///   - shouldRetry: An optional per-call closure that decides whether to retry on a given error.
     /// - Returns: A `Response` object containing the raw `Data`.
     private func performRequest(
         _ request: some IRequest,
         strategy: RetryPolicyStrategy? = nil,
         delegate: URLSessionDelegate?,
         configure: (@Sendable (inout URLRequest) throws -> Void)?,
-        shouldRetry: (@Sendable (Error) -> Bool)?
+        shouldRetry: (@Sendable (Error) -> RetryAction)?
     ) async throws -> Response<Data> {
         try await performRequest(
             strategy: strategy,
             send: { [weak self] in
                 guard let self else { throw NetworkLayerError.badURL }
-
-                var urlRequest = try requestBuilder.build(request, configure) ?? { throw NetworkLayerError.badURL }()
-
-                try await adapt(request, urlRequest: &urlRequest, session: session)
-
-                try await self.delegate?.wrappedValue?.requestProcessor(self, willSendRequest: urlRequest)
-
-                let task = session.dataTask(with: urlRequest)
-
-                do {
-                    let response = try await dataRequestHandler.startDataTask(task, delegate: delegate)
-
-                    if request.requiresAuthentication {
-                        let isRefreshedCredential = try await refresh(
-                            urlRequest: urlRequest,
-                            response: response,
-                            session: session
-                        )
-
-                        if isRefreshedCredential {
-                            throw AuthenticatorInterceptorError.missingCredential
-                        }
-                    }
-
-                    try await validate(response)
-
-                    return response
-                } catch {
-                    throw error
-                }
+                return try await execute(request, delegate: delegate, configure: configure)
             }, shouldRetry: { [weak self] error in
-                guard let self else { return false }
-
-                let globalResult = retryEvaluator?(error) ?? true
-
-                let localResult = shouldRetry?(error) ?? true
-
-                return globalResult && localResult
+                guard let self else { return .stop }
+                return await handleRetry(error, shouldRetry: shouldRetry)
             }
         )
     }
-
-    // swiftlint:enable function_body_length
 
     /// Modifies the `URLRequest` to include authentication credentials if required.
     ///
@@ -155,26 +128,46 @@ actor RequestProcessor {
         try await interceptor?.adapt(request: &urlRequest, for: session)
     }
 
-    /// Checks if a request requires a credential refresh and performs it if necessary.
+    /// Ensures that only a single token refresh is in flight at any given time.
+    ///
+    /// When the first request detects that a refresh is needed it creates a shared `Task`
+    /// and stores it in `pendingRefreshTask`. Every subsequent request that arrives while
+    /// the refresh is still running will `await` that same task instead of starting a new
+    /// one, preventing the "thundering herd" problem. Once the task completes (successfully
+    /// or with an error) `pendingRefreshTask` is cleared so the next cycle can start fresh.
     ///
     /// - Parameters:
-    ///   - urlRequest: The failed or unauthorized request.
-    ///   - response: The received network response.
+    ///   - urlRequest: The unauthorized request that triggered the refresh check.
+    ///   - response: The HTTP response received for `urlRequest`.
     ///   - session: The current `URLSession`.
-    /// - Returns: `true` if a refresh was triggered, `false` otherwise.
-    private func refresh(
+    /// - Returns: `true` if a refresh was triggered or awaited, `false` if none was needed.
+    private func refreshIfNeeded(
         urlRequest: URLRequest,
         response: Response<some Any>,
         session: URLSession
     ) async throws -> Bool {
-        guard let interceptor, let response = response.response as? HTTPURLResponse else { return false }
+        guard
+            let interceptor,
+            let httpResponse = response.response as? HTTPURLResponse,
+            interceptor.isRequireRefresh(urlRequest, response: httpResponse)
+        else { return false }
 
-        if interceptor.isRequireRefresh(urlRequest, response: response) {
-            try await interceptor.refresh(urlRequest, with: response, for: session)
+        // Reuse the existing task if a refresh is already running.
+        if let existingTask = pendingRefreshTask {
+            try await existingTask.value
             return true
         }
 
-        return false
+        // We are the first — own the refresh task.
+        let refreshTask = Task<Void, Error> { [interceptor] in
+            try await interceptor.refresh(urlRequest, with: httpResponse, for: session)
+        }
+
+        pendingRefreshTask = refreshTask
+        defer { pendingRefreshTask = nil }
+
+        try await refreshTask.value
+        return true
     }
 
     /// Wraps a request operation with retry logic provided by the `retryPolicyService`.
@@ -187,13 +180,29 @@ actor RequestProcessor {
     private func performRequest<T: Sendable>(
         strategy: RetryPolicyStrategy? = nil,
         send: @Sendable () async throws -> T,
-        shouldRetry: @Sendable @escaping (Error) -> Bool
+        shouldRetry: @Sendable @escaping (Error) async -> RetryAction
     ) async throws -> T {
         if let retryPolicyService {
             try await retryPolicyService.retry(strategy: strategy, onFailure: shouldRetry, send)
         } else {
             try await send()
         }
+    }
+
+    /// Wraps a request operation with retry logic and returns a detailed `RetryResult`.
+    ///
+    /// - Parameters:
+    ///   - strategy: The strategy to apply for retries.
+    ///   - send: An asynchronous closure that executes the request logic.
+    ///   - shouldRetry: A closure to decide if a retry should occur based on the error.
+    /// - Returns: A `RetryResult` containing the result and retry metadata.
+    private func performRequestWithResult<T: Sendable>(
+        strategy: RetryPolicyStrategy? = nil,
+        send: @Sendable () async throws -> T,
+        shouldRetry: @Sendable @escaping (Error) async -> RetryAction
+    ) async throws -> RetryResult<T> {
+        let service = retryPolicyService ?? RetryPolicyService(strategy: .constant(retry: 0, dispatchDuration: .seconds(0)))
+        return try await service.retryWithResult(strategy: strategy, onFailure: shouldRetry, send)
     }
 
     /// Triggers the delegate's validation logic for the received HTTP response.
@@ -207,6 +216,118 @@ actor RequestProcessor {
             data: response.data,
             task: response.task
         )
+    }
+
+    /// Builds and sends a URL request, applying adapters and delegate hooks,
+    /// with optional token refresh on authentication failure.
+    ///
+    /// - Parameters:
+    ///   - request: The request object conforming to `IRequest`.
+    ///   - delegate: An optional `URLSessionDelegate` for task-level events.
+    ///   - configure: An optional closure to mutate the `URLRequest` before sending.
+    /// - Returns: A `Response<Data>` containing the raw response data.
+    /// - Throws: `NetworkLayerError.badURL` if the request URL cannot be built,
+    ///           or any error produced by adapters, delegate hooks, or the data task.
+    private func execute(
+        _ request: some IRequest,
+        delegate: URLSessionDelegate?,
+        configure: (@Sendable (inout URLRequest) throws -> Void)?
+    ) async throws -> Response<Data> {
+        var urlRequest = try requestBuilder.build(request, configure) ?? { throw NetworkLayerError.badURL }()
+
+        try await adapt(request, urlRequest: &urlRequest, session: session)
+        try await self.delegate?.wrappedValue?.requestProcessor(self, willSendRequest: urlRequest)
+
+        var response = try await performDataTask(urlRequest: urlRequest, delegate: delegate)
+
+        if request.requiresAuthentication {
+            response = try await authenticatedRetryIfNeeded(
+                urlRequest: urlRequest,
+                response: response,
+                delegate: delegate
+            )
+        }
+
+        try validate(response)
+        return response
+    }
+
+    /// Retries the request once if the initial response requires a token refresh.
+    ///
+    /// Uses `refreshIfNeeded` to ensure only one refresh is performed even when
+    /// multiple requests detect an expired token simultaneously. After the shared
+    /// refresh resolves, this method re-executes the data task with the new credential.
+    /// If the retried response still requires a refresh the request is considered
+    /// permanently unauthorized and `AuthenticatorInterceptorError.missingCredential`
+    /// is thrown.
+    ///
+    /// - Parameters:
+    ///   - urlRequest: The original `URLRequest` to retry after a token refresh.
+    ///   - response: The initial response received before any retry attempt.
+    ///   - delegate: An optional `URLSessionDelegate` for task-level events.
+    /// - Returns: The original response if no retry was needed, or the retried response on success.
+    /// - Throws: `AuthenticatorInterceptorError.missingCredential` if the request
+    ///           remains unauthorized after a single retry.
+    private func authenticatedRetryIfNeeded(
+        urlRequest: URLRequest,
+        response: Response<Data>,
+        delegate: URLSessionDelegate?
+    ) async throws -> Response<Data> {
+        guard try await refreshIfNeeded(urlRequest: urlRequest, response: response, session: session) else {
+            return response
+        }
+
+        var adaptedRequest = urlRequest
+        try await interceptor?.adapt(request: &adaptedRequest, for: session)
+
+        let retryResponse = try await performDataTask(urlRequest: adaptedRequest, delegate: delegate)
+
+        if let httpRetryResponse = retryResponse.response as? HTTPURLResponse,
+           interceptor?.isRequireRefresh(adaptedRequest, response: httpRetryResponse) == true
+        {
+            throw AuthenticatorInterceptorError.missingCredential
+        }
+
+        return retryResponse
+    }
+
+    /// Starts a data task for the given `URLRequest` and returns the response.
+    ///
+    /// - Parameters:
+    ///   - urlRequest: The configured `URLRequest` to execute.
+    ///   - delegate: An optional `URLSessionDelegate` for task-level events.
+    /// - Returns: A `Response<Data>` containing the raw response data.
+    private func performDataTask(
+        urlRequest: URLRequest,
+        delegate: URLSessionDelegate?
+    ) async throws -> Response<Data> {
+        let task = session.dataTask(with: urlRequest)
+        return try await dataRequestHandler.startDataTask(task, delegate: delegate)
+    }
+
+    /// Resolves the final retry action by combining global and local retry evaluators.
+    ///
+    /// The most restrictive action takes precedence: `.stop` > `.skipDelay` > `.retry`.
+    ///
+    /// - Parameters:
+    ///   - error: The error that triggered the retry evaluation.
+    ///   - shouldRetry: An optional local closure that returns a `RetryAction` for the given error.
+    /// - Returns: The resolved `RetryAction` based on both evaluators.
+    private func handleRetry(
+        _ error: Error,
+        shouldRetry: (@Sendable (Error) -> RetryAction)?
+    ) -> RetryAction {
+        let globalResult = retryEvaluator?(error) ?? .retry
+        let localResult = shouldRetry?(error) ?? .retry
+
+        switch (globalResult, localResult) {
+        case (_, .stop), (.stop, _):
+            return .stop
+        case (_, .skipDelay), (.skipDelay, _):
+            return .skipDelay
+        case (.retry, .retry):
+            return .retry
+        }
     }
 }
 
@@ -227,7 +348,7 @@ extension RequestProcessor: IRequestProcessor {
         strategy: RetryPolicyStrategy? = nil,
         delegate: URLSessionDelegate? = nil,
         configure: (@Sendable (inout URLRequest) throws -> Void)? = nil,
-        shouldRetry: (@Sendable (Error) -> Bool)? = nil
+        shouldRetry: (@Sendable (Error) -> RetryAction)? = nil
     ) async throws -> Response<M> {
         let response = try await performRequest(
             request,
@@ -240,5 +361,38 @@ extension RequestProcessor: IRequestProcessor {
         return try response.map { data in
             try self.configuration.jsonDecoder.decode(M.self, from: data)
         }
+    }
+
+    /// Sends a network request and returns the result along with retry information.
+    ///
+    /// - Parameters:
+    ///   - request: The request object conforming to the `IRequest` protocol.
+    ///   - strategy: An optional override for the retry policy strategy.
+    ///   - delegate: An optional `URLSessionDelegate`.
+    ///   - configure: An optional closure to modify the `URLRequest`.
+    ///   - shouldRetry: An optional closure to determine if a retry should be attempted.
+    /// - Returns: A retry result containing the response.
+    func sendWithResult<M: Decodable & Sendable>(
+        _ request: some IRequest,
+        strategy: RetryPolicyStrategy? = nil,
+        delegate: URLSessionDelegate? = nil,
+        configure: (@Sendable (inout URLRequest) throws -> Void)? = nil,
+        shouldRetry: (@Sendable (Error) -> RetryAction)? = nil
+    ) async throws -> RetryResult<Response<M>> {
+        try await performRequestWithResult(
+            strategy: strategy,
+            send: { [weak self] in
+                guard let self else { throw NetworkLayerError.badURL }
+
+                let response = try await execute(request, delegate: delegate, configure: configure)
+
+                return try response.map { data in
+                    try self.configuration.jsonDecoder.decode(M.self, from: data)
+                }
+            }, shouldRetry: { [weak self] error in
+                guard let self else { return .stop }
+                return await handleRetry(error, shouldRetry: shouldRetry)
+            }
+        )
     }
 }

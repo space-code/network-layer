@@ -24,7 +24,7 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
     private let jsonEncoder: JSONEncoder
     /// A global evaluator to determine if a retry should be attempted based on the error.
     /// This applies to all requests processed by this instance.
-    private let retryEvaluator: (@Sendable (Error) -> Bool)?
+    private let retryEvaluator: (@Sendable (Error) -> RetryAction)?
 
     // MARK: Initialization
 
@@ -47,7 +47,7 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
         delegate: RequestProcessorDelegate? = nil,
         interceptor: IAuthenticationInterceptor? = nil,
         jsonEncoder: JSONEncoder = JSONEncoder(),
-        retryEvaluator: (@Sendable (Error) -> Bool)? = nil
+        retryEvaluator: (@Sendable (Error) -> RetryAction)? = nil
     ) {
         self.configure = configure
         self.delegate = SafeRequestProcessorDelegate(delegate: delegate)
@@ -59,7 +59,7 @@ public final class NetworkLayerAssembly: INetworkLayerAssembly {
         case .none:
             retryPolicyStrategy = nil
         case .default:
-            retryPolicyStrategy = .constant(retry: 5, duration: .seconds(1))
+            retryPolicyStrategy = .constant(retry: 5, dispatchDuration: .seconds(1))
         case let .custom(strategy):
             retryPolicyStrategy = strategy
         }

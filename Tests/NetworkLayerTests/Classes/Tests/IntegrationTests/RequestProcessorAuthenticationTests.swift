@@ -63,7 +63,7 @@ final class RequestProcessorAuthenicationTests: XCTestCase {
         try await test_failAuthentication(
             adaptError: URLError(.unknown),
             refreshError: nil,
-            expectedError: RetryPolicyError.retryLimitExceeded
+            expectedUnderlyingError: URLError(.unknown)
         )
     }
 
@@ -71,13 +71,15 @@ final class RequestProcessorAuthenicationTests: XCTestCase {
         try await test_failAuthentication(
             adaptError: nil,
             refreshError: URLError(.unknown),
-            expectedError: RetryPolicyError.retryLimitExceeded
+            expectedUnderlyingError: URLError(.unknown)
         )
     }
 
-    // MARK: Private
-
-    private func test_failAuthentication(adaptError: Error?, refreshError: Error?, expectedError: Error) async throws {
+    private func test_failAuthentication(
+        adaptError: Error?,
+        refreshError: Error?,
+        expectedUnderlyingError: Error
+    ) async throws {
         class FailInterceptor: IAuthenticationInterceptor, @unchecked Sendable {
             let adaptError: Error?
             let refreshError: Error?
@@ -105,17 +107,25 @@ final class RequestProcessorAuthenicationTests: XCTestCase {
         // given
         let interceptor = FailInterceptor(adaptError: adaptError, refreshError: refreshError)
         let sut = RequestProcessor.mock(interceptor: interceptor)
-
         let request = makeRequest(.user)
 
         DynamicStubs.register(stubs: [.user], statusCode: 200)
 
         // when
+        var thrownError: Error?
         do {
             let _: Response<User> = try await sut.send(request)
         } catch {
-            XCTAssertEqual(error as NSError, expectedError as NSError)
+            thrownError = error
         }
+
+        // then
+        guard case let .retryLimitExceeded(errors) = thrownError as? RetryPolicyError else {
+            XCTFail("Expected RetryPolicyError.retryLimitExceeded, got \(String(describing: thrownError))")
+            return
+        }
+        XCTAssertFalse(errors.isEmpty, "Collected errors should not be empty")
+        XCTAssertEqual(errors.last as? NSError, expectedUnderlyingError as NSError)
     }
 
     private func makeRequest(_ path: String) -> IRequest {
