@@ -152,7 +152,7 @@ actor RequestProcessor {
             interceptor.isRequireRefresh(urlRequest, response: httpResponse)
         else { return false }
 
-        // Re-use the existing task if a refresh is already running.
+        // Reuse the existing task if a refresh is already running.
         if let existingTask = pendingRefreshTask {
             try await existingTask.value
             return true
