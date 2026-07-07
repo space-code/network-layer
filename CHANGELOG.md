@@ -11,7 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `1.0.x` Releases - [1.0.0](#100)
 
 ---
+## [Unreleased]
 
+### Miscellaneous Tasks
+- Update simulator version in CI
+  - Contributed by [@ns-vasilev](https://github.com/ns-vasilev) in Pull Request [#91](https://github.com/space-code/network-layer/pull/91).
 
 ## [1.2.0](https://github.com/space-code/network-layer/releases/tag/1.2.0)
 
@@ -98,6 +102,7 @@ Released on 2023-12-04. All issues associated with this milestone can be found u
 - Implement `network-layer` package
   - Contributed by [@ns-vasilev](https://github.com/ns-vasilev) in Pull Request [#1](https://github.com/space-code/network-layer/pull/1).
 
+[unreleased]: https://github.com/space-code/network-layer/compare/1.2.0..HEAD
 [1.2.0]: https://github.com/space-code/network-layer/compare/1.1.0..1.2.0
 [1.1.0]: https://github.com/space-code/network-layer/compare/1.0.0..1.1.0
 
